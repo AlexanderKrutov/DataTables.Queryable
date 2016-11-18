@@ -17,5 +17,5 @@
 *.RTF	 diff=astextplain
 
 # Exclude 3rd-party code from Linguist language statistics
-/DataTables.Queryable.Samples/Scripts linguist-vendored
-/DataTables.Queryable.Samples/Content linguist-vendored
+DataTables.Queryable.Samples/Scripts/* linguist-vendored
+DataTables.Queryable.Samples/Content/* linguist-vendored
