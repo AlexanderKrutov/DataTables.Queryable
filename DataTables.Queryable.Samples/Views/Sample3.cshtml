@@ -1,0 +1,127 @@
+﻿@{
+    Layout = "_Layout.cshtml";
+    ViewBag.Title = "Sample 3: Custom filter with parameters";
+}
+
+<h3>@ViewBag.Title</h3>
+<p>
+    This page demonstrates result of using custom filter predicate instead of default search.
+    <ul>
+        <li>Searching is totally disabled for the datatable.</li>
+        <li>Custom parameters are added to the query (<samp>dateFrom</samp> and <samp>dateTo</samp>)</li>
+        <li>Ordering is allowed.</li>
+    </ul>
+<p>Tips:</p>
+<ul>
+    <li>Check the Visual Studio output view (<kbd>Ctrl+Alt+O</kbd>) to see how the datatables-to-server request is translated to LINQ and Entity Framework query.</li>
+    <li>Try multi-column ordering with pressed <kbd>Shift</kbd> and click on a column.</li>
+</ul>
+<br />
+
+<div class="form-inline">
+    <span>Filter persons by the StartDate in range: </span>
+    <input class="daterange form-control" id="daterange">
+</div>
+
+<br />
+
+<table id="table" class="table table-condensed table-bordered table-vcentered dataTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Office</th>
+            <th>Extn.</th>
+            <th>Start date</th>
+            <th>Salary</th>
+        </tr>
+    </thead>
+</table>
+
+<br />
+
+<p>Server-side code:</p>
+
+<pre>
+<code class="csharp">
+// DataTablesController.cs:
+
+public JsonResult Sample3()
+{
+    var request = new DataTablesRequest<Person>(Request.QueryString);
+
+    // get custom parameters from the request
+    const string dateFormat = "yyyy-MM-dd";
+    DateTime dateFrom = DateTime.ParseExact(request["dateFrom"], dateFormat, null);
+    DateTime dateTo = DateTime.ParseExact(request["dateTo"], dateFormat, null);
+    
+    // define custom predicate to filter results:
+    // get all persons hired in period between "dateFrom" and "dateTo"
+    request.CustomFilterPredicate = 
+        (s) => s.StartDate >= dateFrom && s.StartDate <= dateTo;
+    
+    using (var ctx = new DatabaseContext())
+    {
+        var persons = ctx.Persons
+            .Filter(request)
+            .ToPagedList(request.PageNumber, request.PageSize);
+        return JsonDataTable(persons);
+    }
+}
+</code>
+</pre>
+
+
+<script type="text/javascript">
+    $(function () {
+
+        var dateFormat = 'YYYY-MM-DD';
+        var dateFrom = '2001-01-01';
+        var dateTo = '2010-12-31';
+
+        var table = $('#table').DataTable({
+            autoWidth: false,
+            processing: true,
+            serverSide: true,
+            searching: false,
+            order: [[0, "asc"]],
+            pageLength: 10,
+            ajax: {
+                url: '/DataTables/Sample3',
+                data: function (d) {
+                    d.dateFrom = dateFrom;
+                    d.dateTo = dateTo;
+                }
+            },
+            columnDefs: [
+                 { targets: 0, data: 'Name' },
+                 { targets: 1, data: 'Position' },
+                 { targets: 2, data: 'Office' },
+                 { targets: 3, data: 'Extn' },
+                 {
+                     targets: 4, data: 'StartDate',
+                     render: function (data) { return Date.parse(data).toString('MMMM dd, yyyy'); }
+                 },
+                 {
+                     targets: 5, data: 'Salary'
+                 },
+            ]
+        });
+
+        $('.daterange').daterangepicker({
+            locale: {
+                format: dateFormat
+            },
+            startDate: dateFrom,
+            endDate: dateTo,
+        },
+        function (start, end, label) {
+            dateFrom = start.format(dateFormat);
+            dateTo = end.format(dateFormat);
+            table.ajax.reload();
+        });
+
+        hljs.initHighlightingOnLoad();
+    });
+</script>
+
