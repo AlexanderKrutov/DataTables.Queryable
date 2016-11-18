@@ -15,3 +15,7 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# Exclude 3rd-party code from Linguist language statistics
+DataTables.Queryable.Samples/Scripts/* linguist-vendored=false
+DataTables.Queryable.Samples/Content/* linguist-vendored=false
