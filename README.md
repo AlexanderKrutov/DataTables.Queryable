@@ -38,3 +38,6 @@ public JsonResult DataTablesRequestAction()
 * Custom search predicates
 * Lazy data loading from provided `IQueryable<T>` (only filtered records will be extracted)
 * Compatible with [Entity Framework](https://github.com/aspnet/EntityFramework6)
+
+## License
+DataTables.Queryable is licensed under [MIT license](LICENSE).
