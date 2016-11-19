@@ -13,7 +13,7 @@
 </ul>
 <p>Tips:</p>
 <ul>
-    <li>Check the Visual Studio output view (<kbd>Ctrl+Alt+O</kbd>) to see how the datatables-to-server request is translated to LINQ and Entity Framework query.</li>
+    <li>Check the Visual Studio output view (<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>O</kbd>) to see how the datatables-to-server request is translated to LINQ and Entity Framework query.</li>
     <li>Try multi-column ordering with pressed <kbd>Shift</kbd> and click on a column.</li>
 </ul>   
 <br />
@@ -70,7 +70,7 @@ public JsonResult Sample1()
 
         $('#table tfoot th').each(function () {
             var title = $(this).text();
-            $(this).html('<input type="text" class="form-control" placeholder="Search ' + title + '" />');
+            $(this).html('<input type="text" class="form-control" style="width: 100%" placeholder="Search ' + title + '" />');
         });
 
         var table = $('#table').DataTable({

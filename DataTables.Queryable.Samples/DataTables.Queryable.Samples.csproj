@@ -50,7 +50,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework.SqlServerCompact, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.SqlServerCompact.6.1.3\lib\net45\EntityFramework.SqlServerCompact.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.SqlServerCompact.6.1.2\lib\net45\EntityFramework.SqlServerCompact.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
@@ -362,11 +362,11 @@
     <Content Include="Scripts\HighlightJs\README.md" />
     <Content Include="Scripts\HighlightJs\README.ru.md" />
     <Content Include="packages.config" />
-    <Content Include="Content\DataTables\fonts\glyphicons-halflings-regular.woff2" />
-    <Content Include="Content\DataTables\fonts\glyphicons-halflings-regular.woff" />
-    <Content Include="Content\DataTables\fonts\glyphicons-halflings-regular.ttf" />
-    <Content Include="Content\DataTables\fonts\glyphicons-halflings-regular.svg" />
-    <Content Include="Content\DataTables\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Content\bootstrap.min.css.map" />
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
