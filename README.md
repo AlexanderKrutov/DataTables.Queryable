@@ -3,7 +3,7 @@
 ## What is it?
 It is a .Net library for clever processing of requests from [datatables.net](https://www.datatables.net/) jQuery plugin on the server side (ASP.NET, [Nancy](https://github.com/NancyFx/Nancy/) or any other web server).
 
-The library significally reduces boilerplate code and helps to avoid writing same logic of parsing requests for different model types.
+The library significally [reduces boilerplate code](DataTables.Queryable/wiki/BoilerplateReduce) and helps to avoid writing same logic of parsing requests for different model types.
 
 ## How to use it?
 ```csharp
