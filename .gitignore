@@ -47,3 +47,4 @@ bin
 obj
 packages
 *.nupkg
+*.user
