@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>$id$</id>
+	<title>$id$</title>
+    <version>$version$</version>
+    <authors>Alexander Krutov</authors>
+    <owners>Alexander Krutov</owners>
+    <licenseUrl>https://raw.githubusercontent.com/AlexanderKrutov/DataTables.Queryable/master/LICENSE</licenseUrl>
+    <projectUrl>http://github.com/AlexanderKrutov/DataTables.Queryable</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+	<summary>$description$</summary>
+    <releaseNotes>Intital version</releaseNotes>
+    <copyright>Copyright Alexander Krutov, 2016</copyright>
+    <tags>DataTables Queryable ExpressionTree</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+  <files>
+  </files> 
+</package>

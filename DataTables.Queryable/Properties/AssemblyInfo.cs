@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DataTables.Queryable")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription(".Net library for clever processing of requests from datatables.net jQuery plugin on the server side (ASP.NET, Nancy or any other web server).")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Alexander Krutov")]
 [assembly: AssemblyProduct("DataTables.Queryable")]
