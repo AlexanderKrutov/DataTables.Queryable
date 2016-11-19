@@ -25,12 +25,14 @@ public JsonResult DataTablesRequestAction()
     }
 }
 ```
+Need more info? [Welcome to the wiki](https://github.com/AlexanderKrutov/DataTables.Queryable/wiki/).
 
 ## How it works?
-
 1. DataTables.Queryable parses incoming Http request and extracts related parameters (search text, columns ordering info, page number and number of records per page and etc.);
 1. Dynamically builds an expression tree from the request parameters and information about model type `T` using reflection;
 1. Filters provided `IQueryable<T>` with the expression tree.
+
+Take a closer look [what happens inside](https://github.com/AlexanderKrutov/DataTables.Queryable/How-it-works/).
 
 ## Features
 * Global search, individual column search, ordering by one or many columns, pagination
