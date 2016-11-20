@@ -48,3 +48,4 @@ obj
 packages
 *.nupkg
 *.user
+*.sdf
