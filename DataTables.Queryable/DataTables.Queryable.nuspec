@@ -9,8 +9,8 @@
     <licenseUrl>https://raw.githubusercontent.com/AlexanderKrutov/DataTables.Queryable/master/LICENSE</licenseUrl>
     <projectUrl>http://github.com/AlexanderKrutov/DataTables.Queryable</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>$description$</description>
-	<summary>$description$</summary>
+    <description>.Net library for clever processing of requests from datatables.net jQuery plugin on the server side (ASP.NET, Nancy or any other web server).</description>
+	<summary>.Net library for clever processing of requests from datatables.net jQuery plugin on the server side (ASP.NET, Nancy or any other web server).</summary>
     <releaseNotes>Intital version</releaseNotes>
     <copyright>Copyright Alexander Krutov, 2016</copyright>
     <tags>DataTables Queryable ExpressionTree</tags>
@@ -18,5 +18,11 @@
     </dependencies>
   </metadata>
   <files>
+	<file src="bin\Release\net40\DataTables.Queryable.dll" target="lib\net40\DataTables.Queryable.dll" />
+	<file src="bin\Release\net40\DataTables.Queryable.xml" target="lib\net40\DataTables.Queryable.xml" />
+	<file src="bin\Release\net45\DataTables.Queryable.dll" target="lib\net45\DataTables.Queryable.dll" />
+	<file src="bin\Release\net45\DataTables.Queryable.xml" target="lib\net45\DataTables.Queryable.xml" />
+	<file src="bin\Release\net451\DataTables.Queryable.dll" target="lib\net451\DataTables.Queryable.dll" />
+	<file src="bin\Release\net451\DataTables.Queryable.xml" target="lib\net451\DataTables.Queryable.xml" />
   </files> 
 </package>
