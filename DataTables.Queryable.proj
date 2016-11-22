@@ -1,29 +1,35 @@
 <Project InitialTargets="All" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    
+    	
 	<PropertyGroup>  
 		<AssemblyName>DataTables.Queryable</AssemblyName>
-		<OutputDirectory>DataTables.Queryable\bin</OutputDirectory>
-		<AssemblyPath>$(OutputDirectory)\Release\net40\</AssemblyPath>
+		<ProjectName>DataTables.Queryable</ProjectName>
+		<ProjectPath>DataTables.Queryable</ProjectPath>
+		<BinDirectory>$(ProjectPath)\bin</BinDirectory>
+		<GetAssemblyVersionPath>$(BinDirectory)\Debug\</GetAssemblyVersionPath>
     </PropertyGroup>  
 	
 	<ItemGroup>
-        <ProjectToBuild Include="DataTables.Queryable\DataTables.Queryable.csproj">
+	    <ProjectToBuild Include="$(ProjectPath)\$(ProjectName).csproj">
+            <Properties>Configuration=Debug</Properties>
+        </ProjectToBuild>
+        <ProjectToBuild Include="$(ProjectPath)\$(ProjectName).csproj">
             <Properties>Configuration=Release 4.0</Properties>
         </ProjectToBuild>
-        <ProjectToBuild Include="DataTables.Queryable\DataTables.Queryable.csproj">
+        <ProjectToBuild Include="$(ProjectPath)\$(ProjectName).csproj">
             <Properties>Configuration=Release 4.5</Properties>
         </ProjectToBuild>		
-        <ProjectToBuild Include="DataTables.Queryable\DataTables.Queryable.csproj">
+        <ProjectToBuild Include="$(ProjectPath)\$(ProjectName).csproj">
             <Properties>Configuration=Release 4.5.1</Properties>
-        </ProjectToBuild>	
+        </ProjectToBuild>
     </ItemGroup>
 	
+
 	<Target Name="All">
 		<CallTarget Targets="Clean;Build;GetVersion;Pack" />
 	</Target>
 	
 	<Target Name="Clean">  
-        <RemoveDir Directories="$(OutputDirectory)" /> 
+        <RemoveDir Directories="$(BinDirectory)" /> 
 		<Message Text="Cleaned" />
     </Target>  
 	
@@ -33,14 +39,14 @@
     </Target>
 	
 	<Target Name="GetVersion">
-		<GetAssemblyIdentity AssemblyFiles="$(AssemblyPath)$(AssemblyName).dll">
+		<GetAssemblyIdentity AssemblyFiles="$(GetAssemblyVersionPath)$(AssemblyName).dll">
 		  <Output TaskParameter="Assemblies" ItemName="OutputAssemblyInfo" />
 		</GetAssemblyIdentity>
 		<Message Text="Assembly version: %(OutputAssemblyInfo.Version)" />
-  </Target>
+	</Target>
 	
 	<Target Name="Pack">
-		<Exec Command=".nuget\NuGet.exe pack &quot;DataTables.Queryable\DataTables.Queryable.nuspec&quot; -OutputDirectory &quot;.&quot; -properties id=$(AssemblyName);version=%(OutputAssemblyInfo.Version)" />
+		<Exec Command=".nuget\NuGet.exe pack &quot;$(ProjectPath)\$(ProjectName).nuspec&quot; -OutputDirectory &quot;.&quot; -properties id=$(AssemblyName);version=%(OutputAssemblyInfo.Version)" />
 	</Target>
 	
 </Project>
