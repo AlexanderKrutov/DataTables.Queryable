@@ -1,7 +1,6 @@
 ﻿using DataTables.Queryable.Samples.Database;
 using DataTables.Queryable.Samples.Models;
 using Newtonsoft.Json;
-using PagedList;
 using System;
 using System.Collections.Generic;
 using System.Linq;

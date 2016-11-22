@@ -12,6 +12,11 @@ namespace DataTables.Queryable
     /// </summary>
     public static class QueryableExtensions
     {
+        public static IPagedList<T> ToPagedList<T>(this IQueryable<T> query, DataTablesRequest<T> request)
+        {           
+            return new PagedList<T>(query, request);
+        }
+
         /// <summary>
         /// Modifies the <see cref="IQueryable{T}"/> by applying <see cref="DataTablesRequest{T}"/> filtering parameters.
         /// </summary>

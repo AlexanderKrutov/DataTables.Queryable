@@ -5,13 +5,12 @@ using System.Web;
 using System.Web.Mvc;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
+using System.Diagnostics;
 
-using PagedList;
+using Newtonsoft.Json;
 
 using DataTables.Queryable.Samples.Database;
 using DataTables.Queryable.Samples.Models;
-using System.Diagnostics;
-using Newtonsoft.Json;
 
 namespace DataTables.Queryable.Samples.Controllers
 {
@@ -28,7 +27,7 @@ namespace DataTables.Queryable.Samples.Controllers
             {
                 var persons = ctx.Persons
                     .Filter(request)
-                    .ToPagedList(request.PageNumber, request.PageSize);
+                    .ToPagedList(request);
 
                 return JsonDataTable(persons);
             }
@@ -54,7 +53,7 @@ namespace DataTables.Queryable.Samples.Controllers
             {
                 var persons = ctx.Persons
                     .Filter(request)
-                    .ToPagedList(request.PageNumber, request.PageSize);
+                    .ToPagedList(request);
 
                 return JsonDataTable(persons);
             }
@@ -81,7 +80,7 @@ namespace DataTables.Queryable.Samples.Controllers
             {
                 var persons = ctx.Persons
                     .Filter(request)
-                    .ToPagedList(request.PageNumber, request.PageSize);
+                    .ToPagedList(request);
 
                 return JsonDataTable(persons);
             }
@@ -94,14 +93,14 @@ namespace DataTables.Queryable.Samples.Controllers
         /// </summary>
         /// <param name="model">IPagedList collection of items</param>
         /// <returns>JsonNetResult instance to be sent to datatables</returns>
-        protected JsonNetResult JsonDataTable(IPagedList model)
+        protected JsonNetResult JsonDataTable<T>(IPagedList<T> model)
         {
             JsonNetResult jsonResult = new JsonNetResult();
             jsonResult.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
             jsonResult.Data = new
             {
-                recordsTotal = model.TotalItemCount,
-                recordsFiltered = model.TotalItemCount,
+                recordsTotal = model.TotalCount,
+                recordsFiltered = model.TotalCount,
                 data = model
             };
             return jsonResult;
