@@ -21,17 +21,19 @@ namespace DataTables.Queryable
         public int PageSize { get; protected set; }
         public int PagesCount { get; protected set; }
 
-        internal PagedList(IQueryable<T> query, DataTablesRequest<T> request) : base()
+        internal PagedList(IDataTablesQueryable<T> query) : base()
         {
-            int skipCount = (request.PageNumber - 1) * request.PageSize;
-            int takeCount = request.PageSize;
 
-            TotalCount = query.Count();
-            PageNumber = request.PageNumber;
-            PageSize = request.PageSize;
-            PagesCount = TotalCount % PageSize == 0 ? TotalCount / PageSize : TotalCount / PageSize + 1;
 
-            AddRange(query.Skip(skipCount).Take(takeCount));
+            //int skipCount = (query.Request.PageNumber - 1) * query.Request.PageSize;
+            //int takeCount = query.Request.PageSize;
+
+            TotalCount = query.SourceQueryable.Count();
+            //PageNumber = query.Request.PageNumber;
+            //PageSize = query.Request.PageSize;
+            //PagesCount = TotalCount % PageSize == 0 ? TotalCount / PageSize : TotalCount / PageSize + 1;
+
+            AddRange(query.ToList());
         }
     }
 }

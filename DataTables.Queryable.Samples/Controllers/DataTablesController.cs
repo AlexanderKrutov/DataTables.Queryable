@@ -27,7 +27,7 @@ namespace DataTables.Queryable.Samples.Controllers
             {
                 var persons = ctx.Persons
                     .Filter(request)
-                    .ToPagedList(request);
+                    .ToPagedList();
 
                 return JsonDataTable(persons);
             }
@@ -53,7 +53,7 @@ namespace DataTables.Queryable.Samples.Controllers
             {
                 var persons = ctx.Persons
                     .Filter(request)
-                    .ToPagedList(request);
+                    .ToPagedList();
 
                 return JsonDataTable(persons);
             }
@@ -78,9 +78,13 @@ namespace DataTables.Queryable.Samples.Controllers
 
             using (var ctx = new DatabaseContext())
             {
+                var p = ctx.Persons.Filter(request).ToArray();
+
+
+
                 var persons = ctx.Persons
                     .Filter(request)
-                    .ToPagedList(request);
+                    .ToPagedList();
 
                 return JsonDataTable(persons);
             }

@@ -12,9 +12,14 @@ namespace DataTables.Queryable
     /// </summary>
     public static class QueryableExtensions
     {
-        public static IPagedList<T> ToPagedList<T>(this IQueryable<T> query, DataTablesRequest<T> request)
+        public static IPagedList<T> ToPagedList<T>(this IDataTablesQueryable<T> query)
         {           
-            return new PagedList<T>(query, request);
+            return new PagedList<T>(query);
+        }
+
+        public static IDataTablesQueryable<T> AsDataTablesQueryable<T>(this IQueryable<T> query, DataTablesRequest<T> request)
+        {
+            return new DataTablesQueryable<T>(query, request);
         }
 
         /// <summary>
@@ -24,18 +29,20 @@ namespace DataTables.Queryable
         /// <param name="query"><see cref="IQueryable{T}"/> instance to be filtered.</param>
         /// <param name="request"><see cref="DataTablesRequest{T}"/> instance that stores filterning request parameters</param>
         /// <returns><see cref="IQueryable{T}"/> with appied <see cref="DataTablesRequest{T}"/></returns>
-        public static IQueryable<T> Filter<T>(this IQueryable<T> query, DataTablesRequest<T> request)
+        public static IDataTablesQueryable<T> Filter<T>(this IQueryable<T> query, DataTablesRequest<T> request)
         {
-            query = query
-                .CustomFilter(request)
-                .GlobalSearch(request)
-                .ColumnsSearch(request)
-                .Order(request);
+            var result = query
+                .AsDataTablesQueryable(request)
+                .CustomFilter()
+                .GlobalSearch()
+                .ColumnsSearch()
+                .Order()
+                .Paginate();
 
 #if TRACE
-            Trace.WriteLine($"DataTables.Queryable resulting query:\n {query}");   
+            Trace.WriteLine($"DataTables.Queryable resulting query:\n {result}");   
 #endif
-            return query;
+            return result;
         }
 
         /// <summary>
@@ -45,11 +52,11 @@ namespace DataTables.Queryable
         /// <param name="query"><see cref="IQueryable{T}"/> instance to be filtered.</param>
         /// <param name="request">DataTables request instance</param>
         /// <returns></returns>
-        public static IQueryable<T> CustomFilter<T>(this IQueryable<T> query, DataTablesRequest<T> request)
+        public static IDataTablesQueryable<T> CustomFilter<T>(this IDataTablesQueryable<T> query)
         {
-            if (request.CustomFilterPredicate != null)
+            if (query.Request.CustomFilterPredicate != null)
             {
-                query = query.Where(request.CustomFilterPredicate);
+                return (IDataTablesQueryable<T>)query.Where(query.Request.CustomFilterPredicate);
             }
             return query;
         }
@@ -61,16 +68,16 @@ namespace DataTables.Queryable
         /// <param name="query"><see cref="IQueryable{T}"/> instance to be filtered.</param>
         /// <param name="request">DataTables request instance</param>
         /// <returns><see cref="IQueryable{T}"/> with appied global search from <see cref="DataTablesRequest{T}"/></returns>
-        public static IQueryable<T> GlobalSearch<T>(this IQueryable<T> query, DataTablesRequest<T> request)
+        public static IDataTablesQueryable<T> GlobalSearch<T>(this IDataTablesQueryable<T> query)
         {
-            if (!String.IsNullOrEmpty(request.GlobalSearchValue))
+            if (!String.IsNullOrEmpty(query.Request.GlobalSearchValue))
             {
                 // all public properties names 
                 var propertyNames = query.ElementType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                     .Select(p => p.Name);
 
                 // searchable columns
-                var columns = request.Columns.Where(c =>
+                var columns = query.Request.Columns.Where(c =>
                     c.IsSearchable &&
                     propertyNames.Contains(c.PropertyName));
 
@@ -79,12 +86,12 @@ namespace DataTables.Queryable
                     Expression<Func<T, bool>> predicate = null;
                     foreach (var c in columns)
                     {
-                        var expr = c.GlobalSearchPredicate ?? BuildStringContainsPredicate<T>(c.PropertyName, request.GlobalSearchValue);
+                        var expr = c.GlobalSearchPredicate ?? BuildStringContainsPredicate<T>(c.PropertyName, query.Request.GlobalSearchValue);
                         predicate = predicate == null ?
                             PredicateBuilder.Create(expr) :
                             predicate.Or(expr);
                     }
-                    query = query.Where(predicate);
+                    return (IDataTablesQueryable<T>)query.Where(predicate);
                 }
             }
             return query;
@@ -97,14 +104,14 @@ namespace DataTables.Queryable
         /// <param name="query"><see cref="IQueryable{T}"/> instance to be filtered.</param>
         /// <param name="request">DataTables request instance</param>
         /// <returns><see cref="IQueryable{T}"/> with appied individual column search from <see cref="DataTablesRequest{T}"/></returns>
-        public static IQueryable<T> ColumnsSearch<T>(this IQueryable<T> query, DataTablesRequest<T> request)
+        public static IDataTablesQueryable<T> ColumnsSearch<T>(this IDataTablesQueryable<T> query)
         {
             // all public property names 
             var propertyNames = query.ElementType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Select(p => p.Name);
 
             // searchable columns
-            var columns = request.Columns.Where(c =>
+            var columns = query.Request.Columns.Where(c =>
                 c.IsSearchable &&
                 !String.IsNullOrEmpty(c.SearchValue) &&
                 propertyNames.Contains(c.PropertyName));
@@ -119,7 +126,7 @@ namespace DataTables.Queryable
                         PredicateBuilder.Create(expr) :
                         predicate.And(expr);                
                 }
-                query = query.Where(predicate);
+                return (IDataTablesQueryable<T>)query.Where(predicate);
             }
             return query;
         }
@@ -131,27 +138,37 @@ namespace DataTables.Queryable
         /// <param name="query"><see cref="IQueryable{T}"/> instance to be ordered.</param>
         /// <param name="request">DataTables request instance</param>
         /// <returns><see cref="IQueryable{T}"/> with appied ordering from <see cref="DataTablesRequest{T}"/></returns>
-        public static IQueryable<T> Order<T>(this IQueryable<T> query, DataTablesRequest<T> request)
+        public static IDataTablesQueryable<T> Order<T>(this IDataTablesQueryable<T> query)
         {
             // all public property names 
             var propertyNames = query.ElementType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Select(p => p.Name);
 
             // orderable columns
-            var columns = request.Columns.Where(c =>
+            var columns = query.Request.Columns.Where(c =>
                 c.IsOrderable &&
                 c.OrderingIndex != -1 &&
                 propertyNames.Contains(c.PropertyName))
                 .OrderBy(c => c.OrderingIndex);
 
             bool alreadyOrdered = false;
+
+            IDataTablesQueryable<T> result = query;
+
             foreach (var c in columns)
             {
-                query = query.OrderBy(c.PropertyName, c.OrderingDirection, alreadyOrdered);
+                result = (IDataTablesQueryable<T>)query.OrderBy(c.PropertyName, c.OrderingDirection, alreadyOrdered);
                 alreadyOrdered = true;
             }
 
-            return query;
+            return result;
+        }
+
+        public static IDataTablesQueryable<T> Paginate<T>(this IDataTablesQueryable<T> query)
+        {
+            int skipCount = (query.Request.PageNumber - 1) * query.Request.PageSize;
+            int takeCount = query.Request.PageSize;
+            return (IDataTablesQueryable<T>)query.Skip(skipCount).Take(takeCount);
         }
 
         /// <summary>
