@@ -68,9 +68,9 @@
   <ItemGroup>
     <Compile Include="DataTablesColumn.cs" />
     <Compile Include="DataTablesQueryable.cs" />
+    <Compile Include="DataTablesQueryProvider.cs" />
     <Compile Include="DataTablesRequest.cs" />
     <Compile Include="DataTablesColumnsCollection.cs" />
-    <Compile Include="IDataTablesQueryable.cs" />
     <Compile Include="PagedList.cs" />
     <Compile Include="PredicateBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

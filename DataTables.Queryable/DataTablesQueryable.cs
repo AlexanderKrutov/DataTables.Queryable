@@ -8,6 +8,24 @@ using System.Threading.Tasks;
 
 namespace DataTables.Queryable
 {
+    /// <summary>
+    /// Extended version of standard <see cref="IQueryable{T}"/> interface with
+    /// additional property to access <see cref="DataTablesRequest{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">Data type.</typeparam>
+    public interface IDataTablesQueryable<T> : IQueryable<T>
+    {
+        /// <summary>
+        /// <see cref="DataTablesRequest{T}"/> instance to filter the original <see cref="IQueryable{T}"/>.
+        /// </summary>
+        DataTablesRequest<T> Request { get; }
+    }
+
+    /// <summary>
+    /// Internal implementation of <see cref="IDataTablesQueryable{T}"/> interface.
+    /// In fact, this is a wrapper around an <see cref="IQueryable{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">Data type.</typeparam>
     internal class DataTablesQueryable<T> : IDataTablesQueryable<T>
     {
         private IQueryable<T> sourceQueryable;
@@ -44,14 +62,6 @@ namespace DataTables.Queryable
                 return sourceProvider;
             }
         }
-
-        public IQueryable<T> SourceQueryable
-        {
-            get
-            {
-                return sourceQueryable;
-            }
-        }
         
         public IEnumerator<T> GetEnumerator()
         {
@@ -74,38 +84,6 @@ namespace DataTables.Queryable
         public override string ToString()
         {
             return sourceQueryable.ToString();
-        }
-    }
-
-    internal class DataTablesQueryProvider<T> : IQueryProvider
-    {
-        private IQueryProvider sourceProvider;
-        private DataTablesRequest<T> request;
-
-        internal DataTablesQueryProvider(IQueryProvider sourceProvider, DataTablesRequest<T> request)
-        {
-            this.sourceProvider = sourceProvider;
-            this.request = request;
-        }
-
-        public IQueryable CreateQuery(Expression expression)
-        {
-            return new DataTablesQueryable<T>((IQueryable<T>)sourceProvider.CreateQuery(expression), request);
-        }
-
-        public IQueryable<TResult> CreateQuery<TResult>(Expression expression)
-        {
-            return (IQueryable<TResult>)CreateQuery(expression);
-        }
-
-        public object Execute(Expression expression)
-        {
-            return sourceProvider.Execute(expression);
-        }
-
-        public TResult Execute<TResult>(Expression expression)
-        {
-            return (TResult)sourceProvider.Execute(expression);
         }
     }
 }

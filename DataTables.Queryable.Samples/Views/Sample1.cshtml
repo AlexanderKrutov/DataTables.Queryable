@@ -54,12 +54,8 @@ public JsonResult Sample1()
     var request = new DataTablesRequest&lt;Person&gt;(Request.QueryString);
     using (var ctx = new DatabaseContext())
     {
-        var persons = ctx.Persons
-            .Filter(request)
-            .ToPagedList(request.PageNumber, request.PageSize); 
-    
-        return 
-            JsonDataTable(persons);
+        var persons = ctx.Persons.ToPagedList(request);
+        return JsonDataTable(persons);
     }
 }
 </code>
