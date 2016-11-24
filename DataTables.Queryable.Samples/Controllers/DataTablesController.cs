@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 
-using PagedList;
+using Newtonsoft.Json;
 
 using DataTables.Queryable.Samples.Database;
 using DataTables.Queryable.Samples.Models;
-using System.Diagnostics;
-using Newtonsoft.Json;
 
 namespace DataTables.Queryable.Samples.Controllers
 {
@@ -23,13 +16,9 @@ namespace DataTables.Queryable.Samples.Controllers
         public JsonResult Sample1()
         {
             var request = new DataTablesRequest<Person>(Request.QueryString);
-
             using (var ctx = new DatabaseContext())
             {
-                var persons = ctx.Persons
-                    .Filter(request)
-                    .ToPagedList(request.PageNumber, request.PageSize);
-
+                var persons = ctx.Persons.ToPagedList(request);
                 return JsonDataTable(persons);
             }
         }
@@ -52,10 +41,7 @@ namespace DataTables.Queryable.Samples.Controllers
 
             using (var ctx = new DatabaseContext())
             {
-                var persons = ctx.Persons
-                    .Filter(request)
-                    .ToPagedList(request.PageNumber, request.PageSize);
-
+                var persons = ctx.Persons.ToPagedList(request);
                 return JsonDataTable(persons);
             }
         }
@@ -79,29 +65,24 @@ namespace DataTables.Queryable.Samples.Controllers
 
             using (var ctx = new DatabaseContext())
             {
-                var persons = ctx.Persons
-                    .Filter(request)
-                    .ToPagedList(request.PageNumber, request.PageSize);
-
+                var persons = ctx.Persons.ToPagedList(request);
                 return JsonDataTable(persons);
             }
         }
 
         /// <summary>
-        /// Helper method that converts IPagedList collection to the JSON-serialized object in datatables-friendly format.
-        /// In this demo application we use <a href="http://https://github.com/troygoode/PagedList">PagedList</a> library for pagination,
-        /// but you can choose any other way to paginate the resulting collection.
+        /// Helper method that converts <see cref="IPagedList{T}"/> collection to the JSON-serialized object in datatables-friendly format.
         /// </summary>
-        /// <param name="model">IPagedList collection of items</param>
+        /// <param name="model"><see cref="IPagedList{T}"/> collection of items</param>
         /// <returns>JsonNetResult instance to be sent to datatables</returns>
-        protected JsonNetResult JsonDataTable(IPagedList model)
+        protected JsonNetResult JsonDataTable<T>(IPagedList<T> model)
         {
             JsonNetResult jsonResult = new JsonNetResult();
             jsonResult.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
             jsonResult.Data = new
             {
-                recordsTotal = model.TotalItemCount,
-                recordsFiltered = model.TotalItemCount,
+                recordsTotal = model.TotalCount,
+                recordsFiltered = model.TotalCount,
                 data = model
             };
             return jsonResult;

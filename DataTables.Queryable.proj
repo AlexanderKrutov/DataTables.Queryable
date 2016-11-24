@@ -5,7 +5,7 @@
 		<ProjectName>DataTables.Queryable</ProjectName>
 		<ProjectPath>DataTables.Queryable</ProjectPath>
 		<BinDirectory>$(ProjectPath)\bin</BinDirectory>
-		<GetAssemblyVersionPath>$(BinDirectory)\Debug\</GetAssemblyVersionPath>
+		<GetAssemblyVersionPath>$(BinDirectory)\Debug\</GetAssemblyVersionPath>		
     </PropertyGroup>  
 	
 	<ItemGroup>
@@ -42,11 +42,16 @@
 		<GetAssemblyIdentity AssemblyFiles="$(GetAssemblyVersionPath)$(AssemblyName).dll">
 		  <Output TaskParameter="Assemblies" ItemName="OutputAssemblyInfo" />
 		</GetAssemblyIdentity>
-		<Message Text="Assembly version: %(OutputAssemblyInfo.Version)" />
+		<PropertyGroup>
+			<Pattern>(\d+)\.(\d+)\.(\d+)</Pattern>
+			<In>%(OutputAssemblyInfo.Version)</In>
+			<AssemblyVersion>$([System.Text.RegularExpressions.Regex]::Match($(In), $(Pattern)))</AssemblyVersion>
+		</PropertyGroup>
+		<Message Text="Assembly version: $(AssemblyVersion)" />
 	</Target>
 	
 	<Target Name="Pack">
-		<Exec Command=".nuget\NuGet.exe pack &quot;$(ProjectPath)\$(ProjectName).nuspec&quot; -OutputDirectory &quot;.&quot; -properties id=$(AssemblyName);version=%(OutputAssemblyInfo.Version)" />
+		<Exec Command=".nuget\NuGet.exe pack &quot;$(ProjectPath)\$(ProjectName).nuspec&quot; -OutputDirectory &quot;.&quot; -properties id=$(AssemblyName);version=$(AssemblyVersion)" />
 	</Target>
 	
 </Project>

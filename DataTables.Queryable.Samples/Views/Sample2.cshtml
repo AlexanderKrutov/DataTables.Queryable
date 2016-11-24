@@ -49,12 +49,10 @@ public JsonResult Sample2()
         .GlobalSearchPredicate = (p) => p.Position.StartsWith(request.GlobalSearchValue);
     request.Columns[p => p.Office]
         .GlobalSearchPredicate = (p) => p.Office.StartsWith(request.GlobalSearchValue);
-            
+
     using (var ctx = new DatabaseContext())
     {
-        var persons = ctx.Persons
-            .Filter(request)
-            .ToPagedList(request.PageNumber, request.PageSize);
+        var persons = ctx.Persons.ToPagedList(request);
         return JsonDataTable(persons);
     }
 }

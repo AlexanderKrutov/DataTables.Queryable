@@ -14,7 +14,7 @@
 	It dynamically builds an expression tree from the request and allows to filter and sort an IQueryable according to the request parameters.
 	</description>
 	<summary></summary>
-    <releaseNotes>Intital version</releaseNotes>
+    <releaseNotes>Simplifying usage improvements</releaseNotes>
     <copyright>Copyright Alexander Krutov, 2016</copyright>
     <tags>datatables datatables.net iqueryable request expressiontree mvc linq</tags>
     <dependencies>
