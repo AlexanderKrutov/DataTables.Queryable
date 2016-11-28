@@ -20,10 +20,8 @@ public JsonResult DataTablesRequestAction()
     
     using (var ctx = new DatabaseContext())
     {
-        var persons = 
-             ctx.Persons      // take persons from database,
-            .Filter(request)  // apply request filter for the records
-            .ToPagedList();   // and paginate results
+        // take persons from database, apply the datatables request filter and paginate
+        var persons = ctx.Persons.ToPagedList(request);
      
         // push back a result in JSON form applicable for datatables.net
         return JsonDataTable(persons);
