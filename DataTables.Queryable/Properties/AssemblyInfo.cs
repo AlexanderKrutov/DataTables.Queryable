@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Alexander Krutov")]
 [assembly: AssemblyProduct("DataTables.Queryable")]
-[assembly: AssemblyCopyright("Copyright © Alexander Krutov 2016")]
+[assembly: AssemblyCopyright("Copyright © Alexander Krutov 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -30,4 +30,4 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyVersion("1.2.0")]
 [assembly: AssemblyFileVersion("1.2.0")]
-[assembly: AssemblyInformationalVersion("1.1.0")]
+[assembly: AssemblyInformationalVersion("1.2.0")]
