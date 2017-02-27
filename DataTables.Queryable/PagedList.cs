@@ -48,15 +48,29 @@ namespace DataTables.Queryable
         /// <param name="queryable"><see cref="IDataTablesQueryable{T}"/>instance to be paginated</param>
         internal PagedList(IDataTablesQueryable<T> queryable) : base()
         {
-            int skipCount = (queryable.Request.PageNumber - 1) * queryable.Request.PageSize;
-            int takeCount = queryable.Request.PageSize;
+            // pagination is on
+            if (queryable.Request.PageSize > 0)
+            {
+                int skipCount = (queryable.Request.PageNumber - 1) * queryable.Request.PageSize;
+                int takeCount = queryable.Request.PageSize;
 
-            TotalCount = queryable.Count();
-            PageNumber = queryable.Request.PageNumber;
-            PageSize = queryable.Request.PageSize;
-            PagesCount = TotalCount % PageSize == 0 ? TotalCount / PageSize : TotalCount / PageSize + 1;
+                TotalCount = queryable.Count();
+                PageNumber = queryable.Request.PageNumber;
+                PageSize = queryable.Request.PageSize;
+                PagesCount = TotalCount % PageSize == 0 ? TotalCount / PageSize : TotalCount / PageSize + 1;
 
-            AddRange(queryable.Skip(skipCount).Take(takeCount).ToList());
+                AddRange(queryable.Skip(skipCount).Take(takeCount).ToList());
+            }
+            // no pagination
+            else
+            {
+                TotalCount = queryable.Count();
+                PageNumber = 1;
+                PageSize = -1;
+                PagesCount = 1;
+
+                AddRange(queryable.ToList());
+            }
         }
     }
 }
