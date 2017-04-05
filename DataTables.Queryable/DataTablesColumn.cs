@@ -54,6 +54,16 @@ namespace DataTables.Queryable
         public ListSortDirection OrderingDirection { get; set; }
 
         /// <summary>
+        /// If true, the resulting enumerable will be sorted by the specified column with case-insensitive collation.
+        /// </summary>
+        public bool OrderingCaseInsensitive { get; set; }
+
+        /// <summary>
+        /// If true, the resulting enumerable will be searched by the specified column with case-insensitive collation.
+        /// </summary>
+        public bool SearchCaseInsensitive { get; set; }
+
+        /// <summary>
         /// Optional predicate expression that will be used to search by the searchable column when <see cref="SearchValue"/> is specified. 
         /// If no predicate provided, <see cref="string.Contains(string)"/> method is used by default.
         /// </summary>

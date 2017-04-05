@@ -122,7 +122,7 @@ namespace DataTables.Queryable
                     Expression<Func<T, bool>> predicate = null;
                     foreach (var c in columns)
                     {
-                        var expr = c.GlobalSearchPredicate ?? BuildStringContainsPredicate<T>(c.PropertyName, queryable.Request.GlobalSearchValue);
+                        var expr = c.GlobalSearchPredicate ?? BuildStringContainsPredicate<T>(c.PropertyName, queryable.Request.GlobalSearchValue, c.SearchCaseInsensitive);
                         predicate = predicate == null ?
                             PredicateBuilder.Create(expr) :
                             predicate.Or(expr);
@@ -156,7 +156,7 @@ namespace DataTables.Queryable
                 Expression<Func<T, bool>> predicate = null;
                 foreach (var c in columns)
                 {
-                    var expr = c.ColumnSearchPredicate ?? BuildStringContainsPredicate<T>(c.PropertyName, c.SearchValue);
+                    var expr = c.ColumnSearchPredicate ?? BuildStringContainsPredicate<T>(c.PropertyName, c.SearchValue, c.SearchCaseInsensitive);
                     predicate = predicate == null ?
                         PredicateBuilder.Create(expr) :
                         predicate.And(expr);                
@@ -189,7 +189,7 @@ namespace DataTables.Queryable
 
             foreach (var c in columns)
             {
-                queryable = (IDataTablesQueryable<T>)queryable.OrderBy(c.PropertyName, c.OrderingDirection, alreadyOrdered);
+                queryable = (IDataTablesQueryable<T>)queryable.OrderBy(c.PropertyName, c.OrderingDirection, c.OrderingCaseInsensitive, alreadyOrdered);
                 alreadyOrdered = true;
             }
 
@@ -201,6 +201,12 @@ namespace DataTables.Queryable
         /// Used for building search predicates when the searchable property has non-string type.
         /// </summary>
         private static readonly MethodInfo Object_ToString = typeof(object).GetMethod(nameof(object.ToString));
+
+        /// <summary>
+        /// <see cref="string.ToLower()"/> method info. 
+        /// Used for conversion of string values to lower case.
+        /// </summary>
+        private static readonly MethodInfo String_ToLower = typeof(string).GetMethod(nameof(String.ToLower), new Type[] { });
 
         /// <summary>
         /// <see cref="string.Contains(string)"/> method info. 
@@ -218,7 +224,7 @@ namespace DataTables.Queryable
         /// <param name="propertyName">Property name</param>
         /// <param name="stringConstant">String constant to construnt the <see cref="string.Contains(string)"/> expression.</param>
         /// <returns>Predicate instance</returns>
-        private static Expression<Func<T, bool>> BuildStringContainsPredicate<T>(string propertyName, string stringConstant)
+        private static Expression<Func<T, bool>> BuildStringContainsPredicate<T>(string propertyName, string stringConstant, bool caseInsensitive)
         {
             var parameterExp = Expression.Parameter(typeof(T), "e");
             var propertyExp = Expression.Property(parameterExp, propertyName);
@@ -229,6 +235,13 @@ namespace DataTables.Queryable
             if (typeof(T).GetProperty(propertyName).PropertyType != typeof(string))
             {
                 exp = Expression.Call(propertyExp, Object_ToString);
+            }
+
+            // call ToLower if case insensitive search
+            if (caseInsensitive)
+            {
+                exp = Expression.Call(exp, String_ToLower);
+                stringConstant = stringConstant.ToLower();
             }
 
             var someValue = Expression.Constant(stringConstant, typeof(string));
@@ -243,9 +256,10 @@ namespace DataTables.Queryable
         /// <param name="query">Data type</param>
         /// <param name="propertyName">Property name</param>
         /// <param name="direction">Sorting direction</param>
+        /// <param name="caseInsensitive">If true, case insensitive ordering will be performed (with forced <see cref="String.ToLower()"/> conversion).</param>
         /// <param name="alreadyOrdered">Flag indicating the <see cref="IQueryable{T}"/> is already ordered.</param>
         /// <returns>Ordered <see cref="IQueryable{T}"/>.</returns>
-        private static IQueryable<T> OrderBy<T>(this IQueryable<T> query, string propertyName, ListSortDirection direction, bool alreadyOrdered)
+        private static IQueryable<T> OrderBy<T>(this IQueryable<T> query, string propertyName, ListSortDirection direction, bool caseInsensitive, bool alreadyOrdered)
         {
             string methodName = null;
 
@@ -261,7 +275,13 @@ namespace DataTables.Queryable
             var type = typeof(T);
             var property = type.GetProperty(propertyName);
             var parameter = Expression.Parameter(type, "e");
-            var propertyAccess = Expression.MakeMemberAccess(parameter, property);
+
+            Expression propertyAccess = Expression.MakeMemberAccess(parameter, property);
+            if (caseInsensitive && property.PropertyType == typeof(string))
+            {
+                propertyAccess = Expression.Call(propertyAccess, String_ToLower);
+            }
+
             var orderByExp = Expression.Lambda(propertyAccess, parameter);
             var typeArguments = new Type[] { type, property.PropertyType };
 

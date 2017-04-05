@@ -148,6 +148,9 @@ namespace DataTables.Queryable
                 bool orderable = Boolean.TryParse(query[$"columns[{colIndex}][orderable]"], out orderable) ? orderable : true;
                 bool searchable = Boolean.TryParse(query[$"columns[{colIndex}][searchable]"], out searchable) ? searchable : true;
                 bool colSearchRegex = Boolean.TryParse(query["search[regex]"], out colSearchRegex) ? colSearchRegex : false;
+                bool colCISearch = Boolean.TryParse(query[$"columns[{colIndex}][cisearch]"], out colCISearch) ? colCISearch : false;
+                bool colCIOrder = Boolean.TryParse(query[$"columns[{colIndex}][ciorder]"], out colCIOrder) ? colCIOrder : false;
+
                 string data = query[$"columns[{colIndex}][data]"];
                 string name = query[$"columns[{colIndex}][name]"];
                 string searchValue = query[$"columns[{colIndex}][search][value]"];
@@ -168,7 +171,9 @@ namespace DataTables.Queryable
                     SearchValue = searchValue,
                     SearchRegex = colSearchRegex,
                     IsSearchable = searchable,
-                    IsOrderable = orderable
+                    IsOrderable = orderable,
+                    SearchCaseInsensitive = colCISearch,
+                    OrderingCaseInsensitive = colCIOrder
                 };
 
                 Columns.Add(column);
