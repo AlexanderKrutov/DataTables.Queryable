@@ -15,7 +15,7 @@
 	</description>
 	<summary></summary>
     <releaseNotes>Simplifying usage improvements</releaseNotes>
-    <copyright>Copyright Alexander Krutov, 2016</copyright>
+    <copyright>Copyright Alexander Krutov, 2017</copyright>
     <tags>datatables datatables.net iqueryable request expressiontree mvc linq</tags>
     <dependencies>
     </dependencies>
