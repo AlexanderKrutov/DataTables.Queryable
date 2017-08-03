@@ -140,7 +140,7 @@ namespace DataTables.Queryable
             var propertyNames = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(p => p.Name);
 
             // extract columns info
-            string columnPattern = "columns\\[(\\d)\\]\\[data\\]";
+            string columnPattern = "columns\\[(\\d+)\\]\\[data\\]";
             var columnKeys = query.AllKeys.Where(k => k != null && Regex.IsMatch(k, columnPattern));
             foreach (var key in columnKeys)
             {
