@@ -12,6 +12,34 @@ namespace DataTables.Queryable
     /// </summary>
     public static class QueryableExtensions
     {
+	public static IEnumerable<string> ExtractPrimitiveProperties(this IEnumerable<PropertyInfo> props)
+        {
+            var result = new List<string>();
+            props
+                .Where(t => !t.PropertyType.IsSimpleType())
+                .All(p => {
+                    var pps = p.PropertyType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+                    result.AddRange(pps.Where(t => t.PropertyType.IsSimpleType()).Select(r => p.Name + "." + r.Name));
+                    result.AddRange(pps.Where(t => !t.PropertyType.IsSimpleType()).ExtractPrimitiveProperties().Select(r => p.Name + "." + r));
+                    return true;
+                });
+            return result.AsEnumerable();
+        }
+
+        public static bool IsSimpleType(this Type type) =>
+                type.IsValueType ||
+                type.IsPrimitive ||
+                new Type[] {
+                typeof(String),
+                typeof(Decimal),
+                typeof(DateTime),
+                typeof(DateTimeOffset),
+                typeof(TimeSpan),
+                typeof(Guid)
+                }.Contains(type) ||
+                Convert.GetTypeCode(type) != TypeCode.Object;
+	
+	
         /// <summary>
         /// Creates a <see cref="IPagedList{T}"/> from a <see cref="IQueryable{T}"/>.
         /// Calling this method invokes executing the query and immediate applying the filter defined by <see cref="DataTablesRequest{T}"/>.

@@ -137,7 +137,9 @@ namespace DataTables.Queryable
             PageNumber = pageNumber;
             PageSize = length;
 
-            var propertyNames = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(p => p.Name);
+            var properties = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var propertyNames = properties.Where(t => t.PropertyType.IsSimpleType()).Select(p => p.Name).ToList();
+            propertyNames.AddRange(properties.ExtractPrimitiveProperties());
 
             // extract columns info
             string columnPattern = "columns\\[(\\d+)\\]\\[data\\]";
