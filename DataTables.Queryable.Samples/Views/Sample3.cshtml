@@ -7,7 +7,7 @@
 <p>
     This page demonstrates result of using custom filter predicate instead of default search.
     <ul>
-        <li>Searching is totally disabled for the datatable.</li>
+        <li>Searching is totally disabled for the sample.</li>
         <li>Custom parameters are added to the query (<samp>dateFrom</samp> and <samp>dateTo</samp>)</li>
         <li>Ordering is allowed.</li>
     </ul>
@@ -62,7 +62,7 @@ public JsonResult Sample3()
     
     using (var ctx = new DatabaseContext())
     {
-        var persons = ctx.Persons.ToPagedList(request);
+        var persons = ctx.Persons.Include("Office").ToPagedList(request);
         return JsonDataTable(persons);
     }
 }
@@ -94,7 +94,7 @@ public JsonResult Sample3()
             columnDefs: [
                  { targets: 0, data: 'Name' },
                  { targets: 1, data: 'Position' },
-                 { targets: 2, data: 'Office' },
+                 { targets: 2, data: 'Office.Name' },
                  { targets: 3, data: 'Extn' },
                  {
                      targets: 4, data: 'StartDate',

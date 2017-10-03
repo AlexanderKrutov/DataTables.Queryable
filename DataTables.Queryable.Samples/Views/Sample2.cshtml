@@ -47,12 +47,12 @@ public JsonResult Sample2()
         .GlobalSearchPredicate = (p) => p.Name.StartsWith(request.GlobalSearchValue);        
     request.Columns[p => p.Position]
         .GlobalSearchPredicate = (p) => p.Position.StartsWith(request.GlobalSearchValue);
-    request.Columns[p => p.Office]
-        .GlobalSearchPredicate = (p) => p.Office.StartsWith(request.GlobalSearchValue);
+    request.Columns[p => p.Office.Name]
+        .GlobalSearchPredicate = (p) => p.Office.Name.StartsWith(request.GlobalSearchValue);
 
     using (var ctx = new DatabaseContext())
     {
-        var persons = ctx.Persons.ToPagedList(request);
+        var persons = ctx.Persons.Include("Office").ToPagedList(request);
         return JsonDataTable(persons);
     }
 }
@@ -73,7 +73,7 @@ public JsonResult Sample2()
             columnDefs: [
                 { targets: 0, data: 'Name' },
                 { targets: 1, data: 'Position' },
-                { targets: 2, data: 'Office' },
+                { targets: 2, data: 'Office.Name' },
                 { targets: 3, data: 'Extn', searchable: false },
                 {
                     targets: 4, data: 'StartDate', searchable: false,

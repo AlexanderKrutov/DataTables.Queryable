@@ -18,7 +18,7 @@ namespace DataTables.Queryable.Samples.Controllers
             var request = new DataTablesRequest<Person>(Request.QueryString);
             using (var ctx = new DatabaseContext())
             {
-                var persons = ctx.Persons.ToPagedList(request);
+                var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
                 return JsonDataTable(persons);
             }
         }
@@ -36,12 +36,12 @@ namespace DataTables.Queryable.Samples.Controllers
             request.Columns[p => p.Position]
                 .GlobalSearchPredicate = (p) => p.Position.StartsWith(request.GlobalSearchValue);
 
-            request.Columns[p => p.Office]
-                .GlobalSearchPredicate = (p) => p.Office.StartsWith(request.GlobalSearchValue);
+            request.Columns[p => p.Office.Name]
+                .GlobalSearchPredicate = (p) => p.Office.Name.StartsWith(request.GlobalSearchValue);
 
             using (var ctx = new DatabaseContext())
             {
-                var persons = ctx.Persons.ToPagedList(request);
+                var persons = ctx.Persons.Include("Office").ToPagedList(request);
                 return JsonDataTable(persons);
             }
         }
@@ -65,7 +65,7 @@ namespace DataTables.Queryable.Samples.Controllers
 
             using (var ctx = new DatabaseContext())
             {
-                var persons = ctx.Persons.ToPagedList(request);
+                var persons = ctx.Persons.Include("Office").ToPagedList(request);
                 return JsonDataTable(persons);
             }
         }

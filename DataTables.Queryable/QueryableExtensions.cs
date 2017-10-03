@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 
 namespace DataTables.Queryable
 {
@@ -52,7 +54,7 @@ namespace DataTables.Queryable
 
                 // convert IQueryable<T> to IDataTablesQueryable<T>
                 queryable.AsDataTablesQueryable(request)
-                
+
                 // apply custom filter, if specified
                 .CustomFilter()
 
@@ -66,7 +68,7 @@ namespace DataTables.Queryable
                 .Order();
 
 #if TRACE
-            Trace.WriteLine($"DataTables.Queryable resulting query:\n {queryable}");   
+            Trace.WriteLine($"DataTables.Queryable resulting query:\n {queryable}");
 #endif
             return (IDataTablesQueryable<T>)queryable;
         }
@@ -108,14 +110,8 @@ namespace DataTables.Queryable
         {
             if (!String.IsNullOrEmpty(queryable.Request.GlobalSearchValue))
             {
-                // all public properties names 
-                var propertyNames = queryable.ElementType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .Select(p => p.Name);
-
                 // searchable columns
-                var columns = queryable.Request.Columns.Where(c =>
-                    c.IsSearchable &&
-                    propertyNames.Contains(c.PropertyName));
+                var columns = queryable.Request.Columns.Where(c => c.IsSearchable);
 
                 if (columns.Any())
                 {
@@ -141,15 +137,10 @@ namespace DataTables.Queryable
         /// <returns><see cref="IDataTablesQueryable{T}"/> with appied individual column search from <see cref="DataTablesRequest{T}"/></returns>
         public static IDataTablesQueryable<T> ColumnsSearch<T>(this IDataTablesQueryable<T> queryable)
         {
-            // all public property names 
-            var propertyNames = queryable.ElementType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Select(p => p.Name);
-
             // searchable columns
             var columns = queryable.Request.Columns.Where(c =>
                 c.IsSearchable &&
-                !String.IsNullOrEmpty(c.SearchValue) &&
-                propertyNames.Contains(c.PropertyName));
+                !String.IsNullOrEmpty(c.SearchValue));
 
             if (columns.Any())
             {
@@ -159,7 +150,7 @@ namespace DataTables.Queryable
                     var expr = c.ColumnSearchPredicate ?? BuildStringContainsPredicate<T>(c.PropertyName, c.SearchValue, c.SearchCaseInsensitive);
                     predicate = predicate == null ?
                         PredicateBuilder.Create(expr) :
-                        predicate.And(expr);                
+                        predicate.And(expr);
                 }
                 queryable = (IDataTablesQueryable<T>)queryable.Where(predicate);
             }
@@ -174,15 +165,10 @@ namespace DataTables.Queryable
         /// <returns><see cref="IDataTablesQueryable{T}"/> with appied ordering from <see cref="DataTablesRequest{T}"/></returns>
         public static IDataTablesQueryable<T> Order<T>(this IDataTablesQueryable<T> queryable)
         {
-            // all public property names 
-            var propertyNames = queryable.ElementType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Select(p => p.Name);
-
             // orderable columns
             var columns = queryable.Request.Columns.Where(c =>
                 c.IsOrderable &&
-                c.OrderingIndex != -1 &&
-                propertyNames.Contains(c.PropertyName))
+                c.OrderingIndex != -1)
                 .OrderBy(c => c.OrderingIndex);
 
             bool alreadyOrdered = false;
@@ -215,6 +201,23 @@ namespace DataTables.Queryable
         private static readonly MethodInfo String_Contains = typeof(string).GetMethod(nameof(String.Contains), new[] { typeof(string) });
 
         /// <summary>
+        /// Builds the property expression from the full property name.
+        /// </summary>
+        /// <param name="param">Parameter expression, like <code>e =></code></param>
+        /// <param name="propertyName">Name of the property</param>
+        /// <returns>MemberExpression instance</returns>
+        private static MemberExpression BuildPropertyExpression(ParameterExpression param, string propertyName)
+        {
+            string[] parts = propertyName.Split('.');
+            Expression body = param;
+            foreach (var member in parts)
+            {
+                body = Expression.Property(body, member);
+            }
+            return (MemberExpression)body;
+        }
+
+        /// <summary>
         /// Creates predicate expression like 
         /// <code>(T t) => t.SomeProperty.Contains("Constant")</code> 
         /// where "SomeProperty" name is defined by <paramref name="stringConstant"/> parameter, and "Constant" is the <paramref name="stringConstant"/>.
@@ -226,13 +229,14 @@ namespace DataTables.Queryable
         /// <returns>Predicate instance</returns>
         private static Expression<Func<T, bool>> BuildStringContainsPredicate<T>(string propertyName, string stringConstant, bool caseInsensitive)
         {
-            var parameterExp = Expression.Parameter(typeof(T), "e");
-            var propertyExp = Expression.Property(parameterExp, propertyName);
+            var type = typeof(T);
+            var parameterExp = Expression.Parameter(type, "e");
+            var propertyExp = BuildPropertyExpression(parameterExp, propertyName);
 
             Expression exp = propertyExp;
 
             // if the property value type is not string, it needs to be casted at first
-            if (typeof(T).GetProperty(propertyName).PropertyType != typeof(string))
+            if (propertyExp.Type != typeof(string))
             {
                 exp = Expression.Call(propertyExp, Object_ToString);
             }
@@ -273,17 +277,19 @@ namespace DataTables.Queryable
                 methodName = nameof(System.Linq.Queryable.ThenByDescending);
 
             var type = typeof(T);
-            var property = type.GetProperty(propertyName);
-            var parameter = Expression.Parameter(type, "e");
+            var parameterExp = Expression.Parameter(type, "e");
+            var propertyExp = BuildPropertyExpression(parameterExp, propertyName);
 
-            Expression propertyAccess = Expression.MakeMemberAccess(parameter, property);
-            if (caseInsensitive && property.PropertyType == typeof(string))
+            Expression exp = propertyExp;
+
+            // call ToLower if case insensitive search
+            if (caseInsensitive && propertyExp.Type == typeof(string))
             {
-                propertyAccess = Expression.Call(propertyAccess, String_ToLower);
+                exp = Expression.Call(exp, String_ToLower);
             }
 
-            var orderByExp = Expression.Lambda(propertyAccess, parameter);
-            var typeArguments = new Type[] { type, property.PropertyType };
+            var orderByExp = Expression.Lambda(exp, parameterExp);
+            var typeArguments = new Type[] { type, propertyExp.Type };
 
             var resultExpr = Expression.Call(typeof(System.Linq.Queryable), methodName, typeArguments, query.Expression, Expression.Quote(orderByExp));
 
