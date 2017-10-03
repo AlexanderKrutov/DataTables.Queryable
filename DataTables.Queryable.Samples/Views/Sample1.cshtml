@@ -8,6 +8,7 @@
 <ul>
     <li>Global search by all columns with default predicate <code>String.Contains(...)</code></li>
     <li>Individual column search with default predicate <code>String.Contains(...)</code></li>
+    <li>Binding to and search/order by nested properties (<samp>Office</samp>, <samp>Address</samp>)</li>
     <li>Sorting by all column with multisort support</li>
     <li>Pagination</li>
 </ul>
@@ -24,6 +25,7 @@
             <th>Name</th>
             <th>Position</th>
             <th>Office</th>
+            <th>Address</th>
             <th>Extn.</th>
             <th>Start date</th>
             <th>Salary</th>
@@ -34,6 +36,7 @@
             <th>Name</th>
             <th>Position</th>
             <th>Office</th>
+            <th>Address</th>
             <th>Extn.</th>
             <th>Start date</th>
             <th>Salary</th>
@@ -54,7 +57,7 @@ public JsonResult Sample1()
     var request = new DataTablesRequest&lt;Person&gt;(Request.QueryString);
     using (var ctx = new DatabaseContext())
     {
-        var persons = ctx.Persons.ToPagedList(request);
+        var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
         return JsonDataTable(persons);
     }
 }
@@ -81,14 +84,18 @@ public JsonResult Sample1()
             columnDefs: [
                 { targets: 0, data: 'Name' },
                 { targets: 1, data: 'Position' },
-                { targets: 2, data: 'Office' },
-                { targets: 3, data: 'Extn' },
+                { targets: 2, data: 'Office.Name' },
                 {
-                    targets: 4, data: 'StartDate',
+                    targets: 3, data: 'Office.Address.Street',
+                    render: function (street, type, person, meta) { return person.Office.Address.Street + ", " + person.Office.Address.Building; }
+                },
+                { targets: 4, data: 'Extn' },
+                {
+                    targets: 5, data: 'StartDate',
                     render: function (data) { return Date.parse(data).toString('MMMM dd, yyyy'); }
                 },
                 {
-                    targets: 5, data: 'Salary'
+                    targets: 6, data: 'Salary'
                 },
             ]
         });

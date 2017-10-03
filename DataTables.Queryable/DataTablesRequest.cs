@@ -137,8 +137,6 @@ namespace DataTables.Queryable
             PageNumber = pageNumber;
             PageSize = length;
 
-            var propertyNames = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(p => p.Name);
-
             // extract columns info
             string columnPattern = "columns\\[(\\d+)\\]\\[data\\]";
             var columnKeys = query.AllKeys.Where(k => k != null && Regex.IsMatch(k, columnPattern));
@@ -155,14 +153,25 @@ namespace DataTables.Queryable
                 string name = query[$"columns[{colIndex}][name]"];
                 string searchValue = query[$"columns[{colIndex}][search][value]"];
                 string propertyName = null;
+                PropertyInfo propertyInfo = null;
+                Type type = typeof(T);
 
-                if (propertyNames.Contains(data))
+                propertyInfo = GetPropertyByName(type, data);
+                if (propertyInfo != null)
+                {
                     propertyName = data;
-                if (propertyNames.Contains(name))
-                    propertyName = name;
+                }
+                else
+                {
+                    propertyInfo = GetPropertyByName(type, name);
+                    if (propertyInfo != null)
+                    {
+                        propertyName = name;
+                    }
+                }
 
                 if (propertyName == null)
-                    throw new ArgumentException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Meke sure you specified valid identifiers for \"data\" and/or \"name\" parameters in datatables options.");
+                    throw new ArgumentException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Make sure you specified valid identifiers for \"data\" and/or \"name\" parameters in datatables options.");
 
                 var column = new DataTablesColumn<T>()
                 {
@@ -200,6 +209,20 @@ namespace DataTables.Queryable
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets <see cref="PropertyInfo"/> from full property name.
+        /// </summary>
+        /// <param name="type">Type to get the property from</param>
+        /// <param name="propertyName">Full property name. Can contain dots, like "SomeProperty.NestedProperty" to access to nested comlplex types.</param>
+        /// <returns><see cref="PropertyInfo"/> instance.</returns>
+        private PropertyInfo GetPropertyByName(Type type, string propertyName)
+        {
+            string[] parts = propertyName.Split('.');
+            return (parts.Length > 1)
+                ? GetPropertyByName(type.GetProperty(parts[0]).PropertyType, parts.Skip(1).Aggregate((a, i) => $"{a}.{i}"))
+                : type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
         }
     }
 }

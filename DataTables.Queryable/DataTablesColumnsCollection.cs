@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 
 namespace DataTables.Queryable
 {
@@ -37,23 +38,7 @@ namespace DataTables.Queryable
         {
             get
             {
-                if (propertyExpression == null)
-                    throw new ArgumentNullException(nameof(propertyExpression));
-
-                MemberExpression memberExpr = null;
-                if (propertyExpression.Body.NodeType == ExpressionType.Convert)
-                {
-                    memberExpr = ((UnaryExpression)propertyExpression.Body).Operand as MemberExpression;
-                }
-                else if (propertyExpression.Body.NodeType == ExpressionType.MemberAccess)
-                {
-                    memberExpr = propertyExpression.Body as MemberExpression;
-                }
-
-                if (memberExpr == null)
-                    throw new ArgumentException($"Expression \"{propertyExpression}\"' does not refer to a property.");
-
-                return this[memberExpr.Member.Name];
+                return this[GetPropertyPath(propertyExpression)];
             }
         }
 
@@ -67,6 +52,44 @@ namespace DataTables.Queryable
 
                 return column;
             }
+        }
+
+        private MemberExpression GetMemberExpression(Expression expression)
+        {
+            if (expression is MemberExpression)
+            {
+                return (MemberExpression)expression;
+            }
+            else if (expression is LambdaExpression)
+            {
+                var lambdaExpression = expression as LambdaExpression;
+                if (lambdaExpression.Body is MemberExpression)
+                {
+                    return (MemberExpression)lambdaExpression.Body;
+                }
+                else if (lambdaExpression.Body is UnaryExpression)
+                {
+                    return ((MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand);
+                }
+            }
+            return null;
+        }
+
+        private string GetPropertyPath(Expression expr)
+        {
+            var path = new StringBuilder();
+            MemberExpression memberExpression = GetMemberExpression(expr);
+            do
+            {
+                if (path.Length > 0)
+                {
+                    path.Insert(0, ".");
+                }
+                path.Insert(0, memberExpression.Member.Name);
+                memberExpression = GetMemberExpression(memberExpression.Expression);
+            }
+            while (memberExpression != null);
+            return path.ToString();
         }
     }
 }
