@@ -20,24 +20,24 @@ namespace DataTables.Queryable
         /// <summary>
         /// 1-based page number (used for pagination of results).
         /// </summary>
-        public int PageNumber { get; private set; }
+        public int PageNumber { get; }
 
         /// <summary>
         /// Count of records per page.
         /// </summary>
-        public int PageSize { get; private set; }
+        public int PageSize { get; }
 
         /// <summary>
         /// Global search value. To be applied to all columns which have searchable as true.
         /// Null if no search criteria provided.
         /// </summary>
-        public string GlobalSearchValue { get; private set; }
+        public string GlobalSearchValue { get; }
 
         /// <summary>
         /// True if the <see cref="GlobalSearchValue"/> should be treated as a regular expression for advanced searching, false otherwise.
         /// This feature is not implemented yet.
         /// </summary>
-        public bool GlobalSearchRegex { get; private set; }
+        public bool GlobalSearchRegex { get; }
 
         /// <summary>
         /// Collection of DataTables column info.
@@ -56,7 +56,7 @@ namespace DataTables.Queryable
         /// var column = request.Columns[s => s.FirstName];
         /// </code>
         /// </example>
-        public IDataTablesColumnsCollection<T> Columns { get; private set; } = new DataTablesColumnsList<T>();
+        public IDataTablesColumnsCollection<T> Columns { get; } = new DataTablesColumnsList<T>();
 
         /// <summary>
         /// Custom predicate to filter the queryable even when the <see cref="GlobalSearchValue"/> not specified.
@@ -67,33 +67,29 @@ namespace DataTables.Queryable
         /// <summary>
         /// Original request parameters collection
         /// </summary>
-        protected NameValueCollection mOrginalRequest { get; set; } = null;
+        protected NameValueCollection MOrginalRequest { get; set; }
 
         /// <summary>
         /// Gets original request parameter value by its name
         /// </summary>
         /// <param name="parameterName">Name of original request parameter</param>
         /// <returns>String value of original request parameter</returns>
-        public string this[string parameterName]
-        {
-            get
-            {
-                return mOrginalRequest[parameterName];
-            }
-        }
+        public string this[string parameterName] => MOrginalRequest[parameterName];
 
+        /// <inheritdoc />
         /// <summary>
-        /// Creates new <see cref="DataTablesRequest{T}"/> from <see cref="IDictionary{String, Object}"/>.
-        /// This constructor is useful with it's needed to create <see cref="DataTablesRequest{T}"/> from the Nancy's <a href="https://github.com/NancyFx/Nancy/blob/master/src/Nancy/Request.cs">Request.Form</a> data.
+        /// Creates new <see cref="T:DataTables.Queryable.DataTablesRequest`1" /> from <see cref="T:System.Collections.Generic.IDictionary`2" />.
+        /// This constructor is useful with it's needed to create <see cref="T:DataTables.Queryable.DataTablesRequest`1" /> from the Nancy's <a href="https://github.com/NancyFx/Nancy/blob/master/src/Nancy/Request.cs">Request.Form</a> data.
         /// </summary>
         /// <param name="form">Request form data</param>
         public DataTablesRequest(IDictionary<string, object> form) 
             : this(form.Aggregate(new NameValueCollection(), (k, v) => { k.Add(v.Key, v.Value.ToString()); return k; })) { }
 
+        /// <inheritdoc />
         /// <summary>
-        /// Creates new <see cref="DataTablesRequest{T}"/> from <see cref="Uri"/> instance.
+        /// Creates new <see cref="T:DataTables.Queryable.DataTablesRequest`1" /> from <see cref="T:System.Uri" /> instance.
         /// </summary>
-        /// <param name="uri"><see cref="Uri"/> instance</param>
+        /// <param name="uri"><see cref="T:System.Uri" /> instance</param>
         public DataTablesRequest(Uri uri) 
             : this(uri.Query) { }
 
@@ -111,26 +107,25 @@ namespace DataTables.Queryable
         public DataTablesRequest(NameValueCollection query) 
         {
             if (query == null)
-                throw new ArgumentNullException("Datatables query parameters collection is null.");
+                throw new ArgumentNullException(nameof(query), "Datatables query parameters collection is null.");
 
             if (!query.HasKeys())
                 throw new ArgumentException("Datatables query has no keys.");
 
-            mOrginalRequest = new NameValueCollection(query);
+            MOrginalRequest = new NameValueCollection(query);
 
 #if TRACE
-            Trace.WriteLine($"DataTables.Queryable incoming request parameters:");
+            Trace.WriteLine("DataTables.Queryable incoming request parameters:");
             query.AllKeys.ToList().ForEach(k => Trace.WriteLine($"{k} = {query[k]}"));
 #endif
 
-            int start = Int32.TryParse(query["start"], out start) ? start : 0;
-            int length = Int32.TryParse(query["length"], out length) ? length : 15;
+            int start = int.TryParse(query["start"], out start) ? start : 0;
+            int length = int.TryParse(query["length"], out length) ? length : 15;
 
-            string sortFieldColumnIndex = query["order[0][column]"];
-            string globalSearch = query["search[value]"];
-            bool searchRegex = Boolean.TryParse(query["search[regex]"], out searchRegex) ? searchRegex : false;
+            var globalSearch = query["search[value]"];
+            bool searchRegex = bool.TryParse(query["search[regex]"], out searchRegex) && searchRegex;
 
-            int pageNumber = start / length + 1;
+            var pageNumber = start / length + 1;
 
             GlobalSearchValue = globalSearch;
             GlobalSearchRegex = searchRegex;
@@ -138,25 +133,24 @@ namespace DataTables.Queryable
             PageSize = length;
 
             // extract columns info
-            string columnPattern = "columns\\[(\\d+)\\]\\[data\\]";
+            var columnPattern = "columns\\[(\\d+)\\]\\[data\\]";
             var columnKeys = query.AllKeys.Where(k => k != null && Regex.IsMatch(k, columnPattern));
             foreach (var key in columnKeys)
             {
                 var colIndex = Regex.Match(key, columnPattern).Groups[1].Value;
-                bool orderable = Boolean.TryParse(query[$"columns[{colIndex}][orderable]"], out orderable) ? orderable : true;
-                bool searchable = Boolean.TryParse(query[$"columns[{colIndex}][searchable]"], out searchable) ? searchable : true;
-                bool colSearchRegex = Boolean.TryParse(query["search[regex]"], out colSearchRegex) ? colSearchRegex : false;
-                bool colCISearch = Boolean.TryParse(query[$"columns[{colIndex}][cisearch]"], out colCISearch) ? colCISearch : false;
-                bool colCIOrder = Boolean.TryParse(query[$"columns[{colIndex}][ciorder]"], out colCIOrder) ? colCIOrder : false;
+                bool orderable = !bool.TryParse(query[$"columns[{colIndex}][orderable]"], out orderable) || orderable;
+                bool searchable = !bool.TryParse(query[$"columns[{colIndex}][searchable]"], out searchable) || searchable;
+                bool colSearchRegex = bool.TryParse(query["search[regex]"], out colSearchRegex) && colSearchRegex;
+                bool colCiSearch = bool.TryParse(query[$"columns[{colIndex}][cisearch]"], out colCiSearch) && colCiSearch;
+                bool colCiOrder = bool.TryParse(query[$"columns[{colIndex}][ciorder]"], out colCiOrder) && colCiOrder;
 
-                string data = query[$"columns[{colIndex}][data]"];
-                string name = query[$"columns[{colIndex}][name]"];
-                string searchValue = query[$"columns[{colIndex}][search][value]"];
+                var data = query[$"columns[{colIndex}][data]"];
+                var name = query[$"columns[{colIndex}][name]"];
+                var searchValue = query[$"columns[{colIndex}][search][value]"];
                 string propertyName = null;
-                PropertyInfo propertyInfo = null;
-                Type type = typeof(T);
+                var type = typeof(T);
 
-                propertyInfo = GetPropertyByName(type, data);
+                var propertyInfo = GetPropertyByName(type, data);
                 if (propertyInfo != null)
                 {
                     propertyName = data;
@@ -171,43 +165,42 @@ namespace DataTables.Queryable
                 }
 
                 if (propertyName == null)
-                    throw new ArgumentException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Make sure you specified valid identifiers for \"data\" and/or \"name\" parameters in datatables options.");
-
-                var column = new DataTablesColumn<T>()
                 {
-                    Index = Int32.Parse(colIndex),
-                    PropertyName = propertyName,
-                    SearchValue = searchValue,
-                    SearchRegex = colSearchRegex,
-                    IsSearchable = searchable,
-                    IsOrderable = orderable,
-                    SearchCaseInsensitive = colCISearch,
-                    OrderingCaseInsensitive = colCIOrder
-                };
+                    if (!string.IsNullOrEmpty(data) || !string.IsNullOrEmpty(name))
+                        throw new ArgumentException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Make sure you specified valid identifiers for \"data\" and/or \"name\" parameters in datatables options.");
+                }
+                else
+                {
+                    var column = new DataTablesColumn<T>()
+                    {
+                        Index = int.Parse(colIndex),
+                        PropertyName = propertyName,
+                        SearchValue = searchValue,
+                        SearchRegex = colSearchRegex,
+                        IsSearchable = searchable,
+                        IsOrderable = orderable,
+                        SearchCaseInsensitive = colCiSearch,
+                        OrderingCaseInsensitive = colCiOrder
+                    };
 
-                Columns.Add(column);
+                    Columns.Add(column);
+                }
             }
 
             // extract sorting info
-            string orderPattern = "order\\[(\\d)\\]\\[column\\]";
+            const string orderPattern = "order\\[(\\d)\\]\\[column\\]";
             var orderKeys = query.AllKeys.Where(k => k != null && Regex.IsMatch(k, orderPattern));
             foreach (var key in orderKeys)
             {
                 var index = Regex.Match(key, orderPattern).Groups[1].Value;
 
-                int columnIndex = 0;
-                int sortingIndex = 0;
-                if (Int32.TryParse(index, out sortingIndex) &&
-                    Int32.TryParse(query[$"order[{index}][column]"], out columnIndex))
-                {
-                    var column = Columns.FirstOrDefault(c => c.Index == columnIndex);
-                    if (column != null)
-                    {
-                        column.OrderingIndex = sortingIndex;
-                        column.OrderingDirection = query[$"order[{index}][dir]"] == "desc" ? 
-                            ListSortDirection.Descending : ListSortDirection.Ascending;
-                    }
-                }
+                if (!int.TryParse(index, out var sortingIndex) ||
+                    !int.TryParse(query[$"order[{index}][column]"], out var columnIndex)) continue;
+                var column = Columns.FirstOrDefault(c => c.Index == columnIndex);
+                if (column == null) continue;
+                column.OrderingIndex = sortingIndex;
+                column.OrderingDirection = query[$"order[{index}][dir]"] == "desc" ? 
+                    ListSortDirection.Descending : ListSortDirection.Ascending;
             }
         }
 
@@ -217,11 +210,11 @@ namespace DataTables.Queryable
         /// <param name="type">Type to get the property from</param>
         /// <param name="propertyName">Full property name. Can contain dots, like "SomeProperty.NestedProperty" to access to nested comlplex types.</param>
         /// <returns><see cref="PropertyInfo"/> instance.</returns>
-        private PropertyInfo GetPropertyByName(Type type, string propertyName)
+        private static PropertyInfo GetPropertyByName(Type type, string propertyName)
         {
-            string[] parts = propertyName.Split('.');
+            var parts = propertyName.Split('.');
             return (parts.Length > 1)
-                ? GetPropertyByName(type.GetProperty(parts[0]).PropertyType, parts.Skip(1).Aggregate((a, i) => $"{a}.{i}"))
+                ? GetPropertyByName(type.GetProperty(parts[0])?.PropertyType, parts.Skip(1).Aggregate((a, i) => $"{a}.{i}"))
                 : type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
         }
     }

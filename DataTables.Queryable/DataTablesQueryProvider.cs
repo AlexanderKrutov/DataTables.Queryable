@@ -5,18 +5,18 @@ namespace DataTables.Queryable
 {
     internal class DataTablesQueryProvider<T> : IQueryProvider
     {
-        private IQueryProvider sourceProvider;
-        private DataTablesRequest<T> request;
+        private readonly IQueryProvider _sourceProvider;
+        private readonly DataTablesRequest<T> _request;
 
         internal DataTablesQueryProvider(IQueryProvider sourceProvider, DataTablesRequest<T> request)
         {
-            this.sourceProvider = sourceProvider;
-            this.request = request;
+            _sourceProvider = sourceProvider;
+            _request = request;
         }
 
         public IQueryable CreateQuery(Expression expression)
         {
-            return new DataTablesQueryable<T>((IQueryable<T>)sourceProvider.CreateQuery(expression), request);
+            return new DataTablesQueryable<T>((IQueryable<T>)_sourceProvider.CreateQuery(expression), _request);
         }
 
         public IQueryable<TResult> CreateQuery<TResult>(Expression expression)
@@ -26,12 +26,12 @@ namespace DataTables.Queryable
 
         public object Execute(Expression expression)
         {
-            return sourceProvider.Execute(expression);
+            return _sourceProvider.Execute(expression);
         }
 
         public TResult Execute<TResult>(Expression expression)
         {
-            return (TResult)sourceProvider.Execute(expression);
+            return (TResult)_sourceProvider.Execute(expression);
         }
     }
 }

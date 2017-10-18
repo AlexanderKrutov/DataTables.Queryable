@@ -42,17 +42,18 @@ namespace DataTables.Queryable
         public int PageSize { get; protected set; }
         public int PagesCount { get; protected set; }
 
+        /// <inheritdoc />
         /// <summary>
-        /// Creates new instance of <see cref="PagedList{T}"/> collection.
+        /// Creates new instance of <see cref="T:DataTables.Queryable.PagedList`1" /> collection.
         /// </summary>
-        /// <param name="queryable"><see cref="IDataTablesQueryable{T}"/>instance to be paginated</param>
-        internal PagedList(IDataTablesQueryable<T> queryable) : base()
+        /// <param name="queryable"><see cref="T:DataTables.Queryable.IDataTablesQueryable`1" />instance to be paginated</param>
+        internal PagedList(IDataTablesQueryable<T> queryable)
         {
             // pagination is on
             if (queryable.Request.PageSize > 0)
             {
-                int skipCount = (queryable.Request.PageNumber - 1) * queryable.Request.PageSize;
-                int takeCount = queryable.Request.PageSize;
+                var skipCount = (queryable.Request.PageNumber - 1) * queryable.Request.PageSize;
+                var takeCount = queryable.Request.PageSize;
 
                 TotalCount = queryable.Count();
                 PageNumber = queryable.Request.PageNumber;
