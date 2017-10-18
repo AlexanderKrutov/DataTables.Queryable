@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 
 namespace DataTables.Queryable
 {
@@ -108,24 +106,20 @@ namespace DataTables.Queryable
         /// <returns><see cref="IDataTablesQueryable{T}"/> with appied global search from <see cref="DataTablesRequest{T}"/></returns>
         public static IDataTablesQueryable<T> GlobalSearch<T>(this IDataTablesQueryable<T> queryable)
         {
-            if (!String.IsNullOrEmpty(queryable.Request.GlobalSearchValue))
-            {
-                // searchable columns
-                var columns = queryable.Request.Columns.Where(c => c.IsSearchable);
+            if (string.IsNullOrEmpty(queryable.Request.GlobalSearchValue)) return queryable;
 
-                if (columns.Any())
-                {
-                    Expression<Func<T, bool>> predicate = null;
-                    foreach (var c in columns)
-                    {
-                        var expr = c.GlobalSearchPredicate ?? BuildStringContainsPredicate<T>(c.PropertyName, queryable.Request.GlobalSearchValue, c.SearchCaseInsensitive);
-                        predicate = predicate == null ?
-                            PredicateBuilder.Create(expr) :
-                            predicate.Or(expr);
-                    }
-                    queryable = (IDataTablesQueryable<T>)queryable.Where(predicate);
-                }
-            }
+            // searchable columns
+            var columns = queryable.Request.Columns.Where(c => c.IsSearchable);
+
+            if (!columns.Any()) return queryable;
+
+            var predicate = columns
+                .Select(c => c.GlobalSearchPredicate ?? BuildStringContainsPredicate<T>(c.PropertyName,
+                                 queryable.Request.GlobalSearchValue, c.SearchCaseInsensitive))
+                .Aggregate<Expression<Func<T, bool>>, Expression<Func<T, bool>>>(null,
+                    (current, expr) => current == null ? PredicateBuilder.Create(expr) : current.Or(expr));
+            queryable = (IDataTablesQueryable<T>) queryable.Where(predicate);
+
             return queryable;
         }
 
@@ -140,20 +134,18 @@ namespace DataTables.Queryable
             // searchable columns
             var columns = queryable.Request.Columns.Where(c =>
                 c.IsSearchable &&
-                !String.IsNullOrEmpty(c.SearchValue));
+                !string.IsNullOrEmpty(c.SearchValue));
 
-            if (columns.Any())
-            {
-                Expression<Func<T, bool>> predicate = null;
-                foreach (var c in columns)
-                {
-                    var expr = c.ColumnSearchPredicate ?? BuildStringContainsPredicate<T>(c.PropertyName, c.SearchValue, c.SearchCaseInsensitive);
-                    predicate = predicate == null ?
-                        PredicateBuilder.Create(expr) :
-                        predicate.And(expr);
-                }
-                queryable = (IDataTablesQueryable<T>)queryable.Where(predicate);
-            }
+            if (!columns.Any()) return queryable;
+
+            var predicate = columns
+                .Select(c =>
+                    c.ColumnSearchPredicate ??
+                    BuildStringContainsPredicate<T>(c.PropertyName, c.SearchValue, c.SearchCaseInsensitive))
+                .Aggregate<Expression<Func<T, bool>>, Expression<Func<T, bool>>>(null,
+                    (current, expr) => current == null ? PredicateBuilder.Create(expr) : current.And(expr));
+            queryable = (IDataTablesQueryable<T>) queryable.Where(predicate);
+
             return queryable;
         }
 
@@ -171,7 +163,7 @@ namespace DataTables.Queryable
                 c.OrderingIndex != -1)
                 .OrderBy(c => c.OrderingIndex);
 
-            bool alreadyOrdered = false;
+            var alreadyOrdered = false;
 
             foreach (var c in columns)
             {
@@ -186,19 +178,19 @@ namespace DataTables.Queryable
         /// <see cref="object.ToString()"/> method info. 
         /// Used for building search predicates when the searchable property has non-string type.
         /// </summary>
-        private static readonly MethodInfo Object_ToString = typeof(object).GetMethod(nameof(object.ToString));
+        private static readonly MethodInfo ObjectToString = typeof(object).GetMethod(nameof(ToString));
 
         /// <summary>
         /// <see cref="string.ToLower()"/> method info. 
         /// Used for conversion of string values to lower case.
         /// </summary>
-        private static readonly MethodInfo String_ToLower = typeof(string).GetMethod(nameof(String.ToLower), new Type[] { });
+        private static readonly MethodInfo StringToLower = typeof(string).GetMethod(nameof(string.ToLower), new Type[] { });
 
         /// <summary>
         /// <see cref="string.Contains(string)"/> method info. 
         /// Used for building default search predicates.
         /// </summary>
-        private static readonly MethodInfo String_Contains = typeof(string).GetMethod(nameof(String.Contains), new[] { typeof(string) });
+        private static readonly MethodInfo StringContains = typeof(string).GetMethod(nameof(string.Contains), new[] { typeof(string) });
 
         /// <summary>
         /// Builds the property expression from the full property name.
@@ -206,16 +198,8 @@ namespace DataTables.Queryable
         /// <param name="param">Parameter expression, like <code>e =></code></param>
         /// <param name="propertyName">Name of the property</param>
         /// <returns>MemberExpression instance</returns>
-        private static MemberExpression BuildPropertyExpression(ParameterExpression param, string propertyName)
-        {
-            string[] parts = propertyName.Split('.');
-            Expression body = param;
-            foreach (var member in parts)
-            {
-                body = Expression.Property(body, member);
-            }
-            return (MemberExpression)body;
-        }
+        private static MemberExpression BuildPropertyExpression(Expression param, string propertyName) =>
+            (MemberExpression)propertyName.Split('.').Aggregate(param, Expression.Property);
 
         /// <summary>
         /// Creates predicate expression like 
@@ -226,6 +210,7 @@ namespace DataTables.Queryable
         /// <typeparam name="T">Data type</typeparam>
         /// <param name="propertyName">Property name</param>
         /// <param name="stringConstant">String constant to construnt the <see cref="string.Contains(string)"/> expression.</param>
+        /// <param name="caseInsensitive">Case insensitive search</param>
         /// <returns>Predicate instance</returns>
         private static Expression<Func<T, bool>> BuildStringContainsPredicate<T>(string propertyName, string stringConstant, bool caseInsensitive)
         {
@@ -238,18 +223,18 @@ namespace DataTables.Queryable
             // if the property value type is not string, it needs to be casted at first
             if (propertyExp.Type != typeof(string))
             {
-                exp = Expression.Call(propertyExp, Object_ToString);
+                exp = Expression.Call(propertyExp, ObjectToString);
             }
 
             // call ToLower if case insensitive search
             if (caseInsensitive)
             {
-                exp = Expression.Call(exp, String_ToLower);
+                exp = Expression.Call(exp, StringToLower);
                 stringConstant = stringConstant.ToLower();
             }
 
             var someValue = Expression.Constant(stringConstant, typeof(string));
-            var containsMethodExp = Expression.Call(exp, String_Contains, someValue);
+            var containsMethodExp = Expression.Call(exp, StringContains, someValue);
             return Expression.Lambda<Func<T, bool>>(containsMethodExp, parameterExp);
         }
 
@@ -265,16 +250,27 @@ namespace DataTables.Queryable
         /// <returns>Ordered <see cref="IQueryable{T}"/>.</returns>
         private static IQueryable<T> OrderBy<T>(this IQueryable<T> query, string propertyName, ListSortDirection direction, bool caseInsensitive, bool alreadyOrdered)
         {
-            string methodName = null;
+            string methodName;
 
-            if (direction == ListSortDirection.Ascending && !alreadyOrdered)
-                methodName = nameof(System.Linq.Queryable.OrderBy);
-            else if (direction == ListSortDirection.Descending && !alreadyOrdered)
-                methodName = nameof(System.Linq.Queryable.OrderByDescending);
-            if (direction == ListSortDirection.Ascending && alreadyOrdered)
-                methodName = nameof(System.Linq.Queryable.ThenBy);
-            else if (direction == ListSortDirection.Descending && alreadyOrdered)
-                methodName = nameof(System.Linq.Queryable.ThenByDescending);
+            switch (direction)
+            {
+                case ListSortDirection.Ascending when alreadyOrdered:
+                    methodName = nameof(System.Linq.Queryable.ThenBy);
+                    break;
+                case ListSortDirection.Descending when alreadyOrdered:
+                    methodName = nameof(System.Linq.Queryable.ThenByDescending);
+                    break;
+
+                case ListSortDirection.Ascending:
+                    methodName = nameof(System.Linq.Queryable.OrderBy);
+                    break;
+                case ListSortDirection.Descending:
+                    methodName = nameof(System.Linq.Queryable.OrderByDescending);
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(direction), $"{direction} is not valid a sorting direction", null);
+            }
 
             var type = typeof(T);
             var parameterExp = Expression.Parameter(type, "e");
@@ -285,11 +281,11 @@ namespace DataTables.Queryable
             // call ToLower if case insensitive search
             if (caseInsensitive && propertyExp.Type == typeof(string))
             {
-                exp = Expression.Call(exp, String_ToLower);
+                exp = Expression.Call(exp, StringToLower);
             }
 
             var orderByExp = Expression.Lambda(exp, parameterExp);
-            var typeArguments = new Type[] { type, propertyExp.Type };
+            var typeArguments = new[] { type, propertyExp.Type };
 
             var resultExpr = Expression.Call(typeof(System.Linq.Queryable), methodName, typeArguments, query.Expression, Expression.Quote(orderByExp));
 

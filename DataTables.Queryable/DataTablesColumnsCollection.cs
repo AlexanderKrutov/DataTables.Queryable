@@ -34,13 +34,7 @@ namespace DataTables.Queryable
     /// <typeparam name="T">Model entity class</typeparam>
     internal class DataTablesColumnsList<T> : List<DataTablesColumn<T>>, IDataTablesColumnsCollection<T>
     {
-        public DataTablesColumn<T> this[Expression<Func<T, object>> propertyExpression]
-        {
-            get
-            {
-                return this[GetPropertyPath(propertyExpression)];
-            }
-        }
+        public DataTablesColumn<T> this[Expression<Func<T, object>> propertyExpression] => this[GetPropertyPath(propertyExpression)];
 
         public DataTablesColumn<T> this[string columnName]
         {
@@ -56,29 +50,28 @@ namespace DataTables.Queryable
 
         private MemberExpression GetMemberExpression(Expression expression)
         {
-            if (expression is MemberExpression)
+            if (expression is MemberExpression expression1)
             {
-                return (MemberExpression)expression;
+                return expression1;
             }
-            else if (expression is LambdaExpression)
+
+            if (!(expression is LambdaExpression lambdaExpression)) return null;
+
+            switch (lambdaExpression.Body)
             {
-                var lambdaExpression = expression as LambdaExpression;
-                if (lambdaExpression.Body is MemberExpression)
-                {
-                    return (MemberExpression)lambdaExpression.Body;
-                }
-                else if (lambdaExpression.Body is UnaryExpression)
-                {
+                case MemberExpression memberExpression:
+                    return memberExpression;
+                case UnaryExpression _:
                     return ((MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand);
-                }
             }
+
             return null;
         }
 
         private string GetPropertyPath(Expression expr)
         {
             var path = new StringBuilder();
-            MemberExpression memberExpression = GetMemberExpression(expr);
+            var memberExpression = GetMemberExpression(expr);
             do
             {
                 if (path.Length > 0)
