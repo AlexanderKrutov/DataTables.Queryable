@@ -42,6 +42,7 @@ Take a closer look [what happens inside](https://github.com/AlexanderKrutov/Data
 * Global search, individual column search, ordering by one or many columns, pagination
 * Custom request parameters
 * Custom search predicates
+* Supports nested properties
 * Lazy data loading from provided `IQueryable<T>` (only filtered records will be extracted)
 * Compatible with [Entity Framework](https://github.com/aspnet/EntityFramework6)
 
