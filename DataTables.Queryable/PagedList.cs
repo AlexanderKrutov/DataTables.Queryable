@@ -1,14 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace DataTables.Queryable
 {
     /// <summary>
-    /// Collection of items that represents a single page of data extracted from the <see cref="IDataTablesQueryable{T}"/>
-    /// after applying <see cref="DataTablesRequest{T}"/> filter.
+    /// Describes single page of data extracted from the <see cref="IDataTablesQueryable{T}"/> 
     /// </summary>
-    /// <typeparam name="T">Data type</typeparam>
-    public interface IPagedList<T> : IList<T>
+    public interface IPagedList : IList
     {
         /// <summary>
         /// Total items count in the whole collection 
@@ -32,6 +33,13 @@ namespace DataTables.Queryable
     }
 
     /// <summary>
+    /// Collection of items that represents a single page of data extracted from the <see cref="IDataTablesQueryable{T}"/>
+    /// after applying <see cref="DataTablesRequest{T}"/> filter.
+    /// </summary>
+    /// <typeparam name="T">Data type</typeparam>
+    public interface IPagedList<T> : IPagedList, IList<T> { }
+
+    /// <summary>
     /// Internal implementation of <see cref="IPagedList{T}"/> interface.
     /// </summary>
     /// <typeparam name="T">Data type</typeparam>
@@ -41,6 +49,14 @@ namespace DataTables.Queryable
         public int PageNumber { get; protected set; }
         public int PageSize { get; protected set; }
         public int PagesCount { get; protected set; }
+
+        internal PagedList(IPagedList other) : base()
+        {
+            TotalCount = other.TotalCount;
+            PageNumber = other.PageNumber;
+            PageSize = other.PageSize;
+            PagesCount = other.PagesCount;
+        }
 
         /// <summary>
         /// Creates new instance of <see cref="PagedList{T}"/> collection.

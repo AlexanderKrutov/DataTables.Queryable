@@ -20,18 +20,18 @@ namespace DataTables.Queryable
         /// <summary>
         /// 1-based page number (used for pagination of results).
         /// </summary>
-        public int PageNumber { get; private set; }
+        public int PageNumber { get; set; }
 
         /// <summary>
-        /// Count of records per page.
+        /// Count of records per page. Negative value means pagination is off.
         /// </summary>
-        public int PageSize { get; private set; }
+        public int PageSize { get; set; }
 
         /// <summary>
         /// Global search value. To be applied to all columns which have searchable as true.
         /// Null if no search criteria provided.
         /// </summary>
-        public string GlobalSearchValue { get; private set; }
+        public string GlobalSearchValue { get; set; }
 
         /// <summary>
         /// True if the <see cref="GlobalSearchValue"/> should be treated as a regular expression for advanced searching, false otherwise.

@@ -39,6 +39,40 @@ namespace DataTables.Queryable
         }
 
         /// <summary>
+        /// Applies specified action to the each item of paged list.
+        /// </summary>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="list">Paged list instance.</param>
+        /// <param name="action">Action to be applied.</param>
+        /// <returns><see cref="IPagedList{T}"/> instance.</returns>
+        public static IPagedList<T> Apply<T>(this IPagedList<T> list, Action<T> action)
+        {
+            foreach (var item in list)
+            {
+                action(item);
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Converts each item from the source list by applying specified converter function. 
+        /// </summary>
+        /// <typeparam name="T">Source data type</typeparam>
+        /// <typeparam name="TResult">Result data type</typeparam>
+        /// <param name="source">Paged list instance.</param>
+        /// <param name="converter">Converter to be applied.</param>
+        /// <returns><see cref="IPagedList{TResult}"/> instance.</returns>
+        public static IPagedList<TResult> Convert<T, TResult>(this IPagedList<T> source, Func<T, TResult> converter)
+        {
+            var list = new PagedList<TResult>(source);
+            foreach (var item in source)
+            {
+                list.Add(converter(item));
+            }
+            return list;
+        }
+
+        /// <summary>
         /// Modifies the <see cref="IQueryable{T}"/> by applying <see cref="DataTablesRequest{T}"/> filtering parameters.
         /// </summary>
         /// <typeparam name="T">Data type to be filtered</typeparam>
@@ -250,7 +284,8 @@ namespace DataTables.Queryable
 
             var someValue = Expression.Constant(stringConstant, typeof(string));
             var containsMethodExp = Expression.Call(exp, String_Contains, someValue);
-            return Expression.Lambda<Func<T, bool>>(containsMethodExp, parameterExp);
+            var notNullExp = Expression.NotEqual(exp, Expression.Constant(null, typeof(object)));
+            return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(notNullExp, containsMethodExp), parameterExp);
         }
 
         /// <summary>
