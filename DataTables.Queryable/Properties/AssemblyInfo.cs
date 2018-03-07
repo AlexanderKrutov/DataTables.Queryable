@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Alexander Krutov")]
 [assembly: AssemblyProduct("DataTables.Queryable")]
-[assembly: AssemblyCopyright("Copyright © Alexander Krutov 2017")]
+[assembly: AssemblyCopyright("Copyright © Alexander Krutov 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -28,6 +28,6 @@ using System.Runtime.InteropServices;
 //      Minor Version 
 //      Build Number
 
-[assembly: AssemblyVersion("1.5.0")]
-[assembly: AssemblyFileVersion("1.5.0")]
-[assembly: AssemblyInformationalVersion("1.5.0")]
+[assembly: AssemblyVersion("1.6.2")]
+[assembly: AssemblyFileVersion("1.6.2")]
+[assembly: AssemblyInformationalVersion("1.6.2")]
