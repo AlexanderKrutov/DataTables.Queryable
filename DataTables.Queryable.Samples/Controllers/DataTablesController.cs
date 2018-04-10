@@ -15,11 +15,14 @@ namespace DataTables.Queryable.Samples.Controllers
         /// </summary>
         public JsonResult Sample1()
         {
+            // https://datatables.net/manual/server-side search "draw"
+            int draw = Convert.ToInt32(Request.QueryString["draw"]);
+
             var request = new DataTablesRequest<Person>(Request.QueryString);
             using (var ctx = new DatabaseContext())
             {
                 var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
-                return JsonDataTable(persons);
+                return JsonDataTable(persons, draw);
             }
         }
 
@@ -42,7 +45,7 @@ namespace DataTables.Queryable.Samples.Controllers
             using (var ctx = new DatabaseContext())
             {
                 var persons = ctx.Persons.Include("Office").ToPagedList(request);
-                return JsonDataTable(persons);
+                return JsonDataTable(persons, Convert.ToInt32(Request.QueryString["draw"]));
             }
         }
 
@@ -66,7 +69,18 @@ namespace DataTables.Queryable.Samples.Controllers
             using (var ctx = new DatabaseContext())
             {
                 var persons = ctx.Persons.Include("Office").ToPagedList(request);
-                return JsonDataTable(persons);
+                return JsonDataTable(persons, Convert.ToInt32(Request.QueryString["draw"]));
+            }
+        }
+
+        [HttpPost]
+        public JsonResult Sample4(DataTablesAjaxPostModel dataTable)
+        {
+            var request = new DataTablesRequest<Person>(dataTable);
+            using (var ctx = new DatabaseContext())
+            {
+                var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
+                return JsonDataTable(persons, Convert.ToInt32(Request.QueryString["draw"]));
             }
         }
 
@@ -75,12 +89,13 @@ namespace DataTables.Queryable.Samples.Controllers
         /// </summary>
         /// <param name="model"><see cref="IPagedList{T}"/> collection of items</param>
         /// <returns>JsonNetResult instance to be sent to datatables</returns>
-        protected JsonNetResult JsonDataTable<T>(IPagedList<T> model)
+        protected JsonNetResult JsonDataTable<T>(IPagedList<T> model, int draw)
         {
             JsonNetResult jsonResult = new JsonNetResult();
             jsonResult.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
             jsonResult.Data = new
             {
+                draw = draw,
                 recordsTotal = model.TotalCount,
                 recordsFiltered = model.TotalCount,
                 data = model
