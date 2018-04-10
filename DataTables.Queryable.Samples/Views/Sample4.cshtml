@@ -1,6 +1,6 @@
 ﻿@{
     Layout = "_Layout.cshtml";
-    ViewBag.Title = "Sample 1: Basic usage";
+    ViewBag.Title = "Sample 1: ajax POST";
 }
 
 <h3>@ViewBag.Title</h3>
@@ -53,13 +53,14 @@
 <code class="csharp">
 // DataTablesController.cs:
 
-public JsonResult Sample1()
+[HttpPost]
+public JsonResult Sample4(DataTablesAjaxPostModel dataTable)
 {
-    var request = new DataTablesRequest&lt;Person&gt;(Request.QueryString);
+var request = new DataTablesRequest<Person>(dataTable);
     using (var ctx = new DatabaseContext())
     {
         var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
-        return JsonDataTable(persons);
+        return JsonDataTable(persons, dataTable.draw);
     }
 }
 </code>

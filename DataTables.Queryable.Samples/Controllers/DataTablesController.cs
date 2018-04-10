@@ -80,7 +80,7 @@ namespace DataTables.Queryable.Samples.Controllers
             using (var ctx = new DatabaseContext())
             {
                 var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
-                return JsonDataTable(persons, Convert.ToInt32(Request.QueryString["draw"]));
+                return JsonDataTable(persons, dataTable.draw);
             }
         }
 
