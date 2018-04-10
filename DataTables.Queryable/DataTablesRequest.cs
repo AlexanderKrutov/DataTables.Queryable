@@ -104,6 +104,46 @@ namespace DataTables.Queryable
         public DataTablesRequest(string queryString) 
             : this(HttpUtility.ParseQueryString(queryString)) { }
 
+        public DataTablesRequest(DataTablesAjaxPostModel ajaxPostModel)
+        {
+            int pageNumber = ajaxPostModel.start / ajaxPostModel.length + 1;
+
+            GlobalSearchValue = ajaxPostModel.search.value;
+            GlobalSearchRegex = ajaxPostModel.search.regex;
+            PageNumber = pageNumber;
+            PageSize = ajaxPostModel.length;
+
+            for (int i = 0; i < ajaxPostModel.columns.Count; i++)
+            {
+                var postedColumn = ajaxPostModel.columns[i];
+
+                var column = new DataTablesColumn<T>()
+                {
+                    Index = i,
+                    PropertyName = GetPropertyInfo(postedColumn.data, postedColumn.name),
+                    SearchValue = postedColumn.search.value,
+                    SearchRegex = postedColumn.search.regex,
+                    IsSearchable = postedColumn.searchable,
+                    IsOrderable = postedColumn.orderable,
+                    SearchCaseInsensitive = postedColumn.search.cisearch,
+                    OrderingCaseInsensitive = postedColumn.search.ciorder
+                };
+
+                Columns.Add(column);
+            }
+
+            for (int i = 0; i < ajaxPostModel.order.Count; i++)
+            {
+                var postedOrder = ajaxPostModel.order[i];
+                var postedOrderColumn = Columns.ElementAt(postedOrder.column);
+
+                postedOrderColumn.OrderingIndex = i;
+                postedOrderColumn.OrderingDirection = postedOrder.dir == "desc" ?
+                            ListSortDirection.Descending : ListSortDirection.Ascending;
+            }
+
+        }
+
         /// <summary>
         /// Creates new <see cref="DataTablesRequest{T}"/> from <see cref="NameValueCollection"/> instance.
         /// </summary>
@@ -152,23 +192,7 @@ namespace DataTables.Queryable
                 string data = query[$"columns[{colIndex}][data]"];
                 string name = query[$"columns[{colIndex}][name]"];
                 string searchValue = query[$"columns[{colIndex}][search][value]"];
-                string propertyName = null;
-                PropertyInfo propertyInfo = null;
-                Type type = typeof(T);
-
-                propertyInfo = GetPropertyByName(type, data);
-                if (propertyInfo != null)
-                {
-                    propertyName = data;
-                }
-                else
-                {
-                    propertyInfo = GetPropertyByName(type, name);
-                    if (propertyInfo != null)
-                    {
-                        propertyName = name;
-                    }
-                }
+                string propertyName = GetPropertyInfo(data, name);
 
                 if (propertyName == null)
                     throw new ArgumentException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Make sure you specified valid identifiers for \"data\" and/or \"name\" parameters in datatables options.");
@@ -209,6 +233,28 @@ namespace DataTables.Queryable
                     }
                 }
             }
+        }
+
+        private string GetPropertyInfo(string data, string name)
+        {
+            PropertyInfo propertyInfo = null;
+            Type type = typeof(T);
+
+            propertyInfo = GetPropertyByName(type, data);
+            if (propertyInfo != null)
+            {
+                return data;
+            }
+            else
+            {
+                propertyInfo = GetPropertyByName(type, name);
+                if (propertyInfo != null)
+                {
+                    return name;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
