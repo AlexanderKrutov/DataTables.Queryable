@@ -156,22 +156,38 @@ namespace DataTables.Queryable
                 PropertyInfo propertyInfo = null;
                 Type type = typeof(T);
 
-                propertyInfo = GetPropertyByName(type, data);
-                if (propertyInfo != null)
+                // take property name from `data`
+                if (colIndex.ToString() != data)
                 {
-                    propertyName = data;
+                    propertyInfo = GetPropertyByName(type, data);
+                    if (propertyInfo != null)
+                    {
+                        propertyName = data;
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Could not find a property called \"{data}\" on type \"{type}\". Make sure you have specified correct value of \"columnDefs.data\" parameter in datatables options.");
+                    }
                 }
-                else
+
+                // take property name from `name`
+                if (propertyInfo == null && !string.IsNullOrWhiteSpace(name))
                 {
                     propertyInfo = GetPropertyByName(type, name);
                     if (propertyInfo != null)
                     {
                         propertyName = name;
                     }
+                    else
+                    {
+                        throw new ArgumentException($"Could not find a property called \"{name}\" on type \"{type}\". Make sure you have specified correct value of \"columnDefs.name\" parameter in datatables options.");
+                    }
                 }
 
                 if (propertyName == null)
-                    throw new ArgumentException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Make sure you specified valid identifiers for \"data\" and/or \"name\" parameters in datatables options.");
+                {
+                    throw new ArgumentException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Make sure you specified valid identifiers for \"columnDefs.data\" and/or \"columnDefs.name\" parameters in datatables options for the column \"{colIndex}\".");
+                }
 
                 var column = new DataTablesColumn<T>()
                 {
