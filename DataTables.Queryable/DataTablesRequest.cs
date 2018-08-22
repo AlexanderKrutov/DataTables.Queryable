@@ -126,7 +126,6 @@ namespace DataTables.Queryable
             int start = Int32.TryParse(query["start"], out start) ? start : 0;
             int length = Int32.TryParse(query["length"], out length) ? length : 15;
 
-            string sortFieldColumnIndex = query["order[0][column]"];
             string globalSearch = query["search[value]"];
             bool searchRegex = Boolean.TryParse(query["search[regex]"], out searchRegex) ? searchRegex : false;
 
