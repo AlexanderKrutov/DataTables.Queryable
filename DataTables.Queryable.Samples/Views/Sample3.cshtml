@@ -63,7 +63,7 @@ public JsonResult Sample3()
     using (var ctx = new DatabaseContext())
     {
         var persons = ctx.Persons.Include("Office").ToPagedList(request);
-        return JsonDataTable(persons);
+        return JsonDataTable(persons, request.Draw);
     }
 }
 </code>

@@ -1,16 +1,17 @@
 ﻿@{
     Layout = "_Layout.cshtml";
-    ViewBag.Title = "Sample 1: Basic usage";
+    ViewBag.Title = "Sample 4: AJAX POST";
 }
 
 <h3>@ViewBag.Title</h3>
-<p>This page demonstrates basic usage of <samp>DataTables.Queryable</samp> library with all features enabled:</p>
+<p>This page demonstrates basic usage of <samp>DataTables.Queryable</samp> library with all features enabled using an AJAX POST:</p>
 <ul>
     <li>Global search by all columns with default predicate <code>String.Contains(...)</code></li>
     <li>Individual column search with default predicate <code>String.Contains(...)</code></li>
     <li>Binding to and search/order by nested properties (<samp>Office</samp>, <samp>Address</samp>)</li>
     <li>Sorting by all column with multisort support</li>
     <li>Pagination</li>
+    <li>AJAX POST</li>
 </ul>
 <p>Tips:</p>
 <ul>
@@ -52,9 +53,9 @@
 <code class="csharp">
 // DataTablesController.cs:
 
-public JsonResult Sample1()
+public JsonResult Sample4(DataTablesAjaxPostModel model)
 {
-    var request = new DataTablesRequest&lt;Person&gt;(Request.QueryString);
+    var request = new DataTablesRequest&lt;Person&gt;(model);
     using (var ctx = new DatabaseContext())
     {
         var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
@@ -79,7 +80,8 @@ public JsonResult Sample1()
             order: [[0, "asc"]],
             pageLength: 10,
             ajax: {
-                url: '/DataTables/Sample1'
+                url: '/DataTables/Sample4',
+                type: 'POST'
             },
             columnDefs: [
                 { targets: 0, data: 'Name' },

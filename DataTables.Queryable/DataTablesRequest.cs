@@ -28,6 +28,11 @@ namespace DataTables.Queryable
         public int PageSize { get; set; }
 
         /// <summary>
+        /// Draw counter. This is used by DataTables to ensure that the Ajax returns from server-side processing requests are drawn in sequence by DataTables.
+        /// </summary>
+        public int Draw { get; set; }
+
+        /// <summary>
         /// Global search value. To be applied to all columns which have searchable as true.
         /// Null if no search criteria provided.
         /// </summary>
@@ -98,6 +103,13 @@ namespace DataTables.Queryable
             : this(uri.Query) { }
 
         /// <summary>
+        /// Creates new <see cref="DataTablesRequest{T}"/> from <see cref="DataTablesAjaxPostModel"/>.
+        /// </summary>
+        /// <param name="ajaxPostModel">Contains datatables parameters sent from client side when POST method is used.</param>
+        public DataTablesRequest(DataTablesAjaxPostModel ajaxPostModel)
+            :this(ajaxPostModel.ToNameValueCollection()) {  }
+
+        /// <summary>
         /// Creates new <see cref="DataTablesRequest{T}"/> from http query string.
         /// </summary>
         /// <param name="queryString"></param>
@@ -125,6 +137,7 @@ namespace DataTables.Queryable
 
             int start = Int32.TryParse(query["start"], out start) ? start : 0;
             int length = Int32.TryParse(query["length"], out length) ? length : 15;
+            int draw = Int32.TryParse(query["draw"], out draw) ? draw : 0;
 
             string globalSearch = query["search[value]"];
             bool searchRegex = Boolean.TryParse(query["search[regex]"], out searchRegex) ? searchRegex : false;
@@ -135,6 +148,7 @@ namespace DataTables.Queryable
             GlobalSearchRegex = searchRegex;
             PageNumber = pageNumber;
             PageSize = length;
+            Draw = draw;
 
             // extract columns info
             string columnPattern = "columns\\[(\\d+)\\]\\[data\\]";
