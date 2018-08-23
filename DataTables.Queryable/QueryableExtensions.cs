@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DataTables.Queryable
 {
@@ -14,6 +15,8 @@ namespace DataTables.Queryable
     /// </summary>
     public static class QueryableExtensions
     {
+        #region Synchronous methods
+
         /// <summary>
         /// Creates a <see cref="IPagedList{T}"/> from a <see cref="IEnumerable{T}"/>.
         /// Calling this method invokes executing the query and immediate applying the filter defined by <see cref="DataTablesRequest{T}"/>.
@@ -22,7 +25,7 @@ namespace DataTables.Queryable
         /// </summary>
         public static IPagedList<T> ToPagedList<T>(this IEnumerable<T> source, DataTablesRequest<T> request)
         {
-            return source.AsQueryable().AsDataTablesQueryable(request).ToPagedList();
+            return source.AsQueryable().ToPagedList(request);
         }
 
         /// <summary>
@@ -48,6 +51,47 @@ namespace DataTables.Queryable
         {
             return new PagedList<T>(queryable);
         }
+
+        #endregion Synchronous methods
+
+        #region Asynchronous methods
+
+        /// <summary>
+        /// Asynchronously creates a <see cref="IPagedList{T}"/> from a <see cref="IEnumerable{T}"/>.
+        /// Calling this method invokes executing the query and applying the filter defined by <see cref="DataTablesRequest{T}"/>.
+        /// <param name="source"><see cref="IEnumerable{T}"/> to be filtered and paginated.</param>
+        /// <param name="request"><see cref="DataTablesRequest{T}"/> instance with filtering parameters.</param>
+        /// </summary>
+        public static Task<IPagedList<T>> ToPagedListAsync<T>(this IEnumerable<T> source, DataTablesRequest<T> request)
+        {
+            return Task.Run(() => source.AsQueryable().ToPagedList(request));
+        }
+
+        /// <summary>
+        /// Asynchronously creates a <see cref="IPagedList{T}"/> from a <see cref="IQueryable{T}"/>.
+        /// Calling this method invokes executing the query and applying the filter defined by <see cref="DataTablesRequest{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="queryable"><see cref="IQueryable{T}"/> to be filtered and paginated.</param>
+        /// <param name="request"><see cref="DataTablesRequest{T}"/> instance with filtering parameters.</param>
+        /// <returns><see cref="IPagedList{T}"/> intstance.</returns>
+        public static Task<IPagedList<T>> ToPagedListAsync<T>(this IQueryable<T> queryable, DataTablesRequest<T> request)
+        {
+            return Task.Run(() => queryable.Filter(request).ToPagedList());
+        }
+
+        /// <summary>
+        /// Asynchronously creates a <see cref="IPagedList{T}"/> from a <see cref="IDataTablesQueryable{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Data type.</typeparam>
+        /// <param name="queryable"><see cref="IDataTablesQueryable{T}"/> instance.</param>
+        /// <returns><see cref="IPagedList{T}"/> instance.</returns>
+        public static Task<IPagedList<T>> ToPagedListAsync<T>(this IDataTablesQueryable<T> queryable)
+        {
+            return Task.Run<IPagedList<T>>(() => new PagedList<T>(queryable));
+        }
+        
+        #endregion Asynchronous methods
 
         /// <summary>
         /// Applies specified action to the each item of paged list.

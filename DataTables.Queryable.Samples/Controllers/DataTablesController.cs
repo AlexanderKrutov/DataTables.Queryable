@@ -11,6 +11,7 @@ using System.Data.Entity;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data.Entity.SqlServerCompact;
+using System.Threading.Tasks;
 
 namespace DataTables.Queryable.Samples.Controllers
 {
@@ -83,6 +84,19 @@ namespace DataTables.Queryable.Samples.Controllers
             using (var ctx = new DatabaseContext())
             {
                 var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
+                return JsonDataTable(persons, request.Draw);
+            }
+        }
+
+        /// <summary>
+        /// Async processing
+        /// </summary>
+        public async Task<JsonResult> Sample5()
+        {
+            var request = new DataTablesRequest<Person>(Request.QueryString);
+            using (var ctx = new DatabaseContext())
+            {
+                var persons = await ctx.Persons.Include("Office.Address").ToPagedListAsync(request);
                 return JsonDataTable(persons, request.Draw);
             }
         }
