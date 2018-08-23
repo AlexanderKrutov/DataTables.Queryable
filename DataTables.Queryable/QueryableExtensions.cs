@@ -15,6 +15,17 @@ namespace DataTables.Queryable
     public static class QueryableExtensions
     {
         /// <summary>
+        /// Creates a <see cref="IPagedList{T}"/> from a <see cref="IEnumerable{T}"/>.
+        /// Calling this method invokes executing the query and immediate applying the filter defined by <see cref="DataTablesRequest{T}"/>.
+        /// <param name="source"><see cref="IEnumerable{T}"/> to be filtered and paginated immediately.</param>
+        /// <param name="request"><see cref="DataTablesRequest{T}"/> instance with filtering parameters.</param>
+        /// </summary>
+        public static IPagedList<T> ToPagedList<T>(this IEnumerable<T> source, DataTablesRequest<T> request)
+        {
+            return source.AsQueryable().AsDataTablesQueryable(request).ToPagedList();
+        }
+
+        /// <summary>
         /// Creates a <see cref="IPagedList{T}"/> from a <see cref="IQueryable{T}"/>.
         /// Calling this method invokes executing the query and immediate applying the filter defined by <see cref="DataTablesRequest{T}"/>.
         /// </summary>
