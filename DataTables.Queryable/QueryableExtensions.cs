@@ -264,7 +264,8 @@ namespace DataTables.Queryable
 
             foreach (var c in columns)
             {
-                queryable = (IDataTablesQueryable<T>)queryable.OrderBy(c.PropertyName, c.OrderingDirection, c.OrderingCaseInsensitive, alreadyOrdered);
+                var propertyName = c.ColumnOrderingProperty != null ? c.ColumnOrderingProperty.GetPropertyPath() : c.PropertyName;
+                queryable = (IDataTablesQueryable<T>)queryable.OrderBy(propertyName, c.OrderingDirection, c.OrderingCaseInsensitive, alreadyOrdered);
                 alreadyOrdered = true;
             }
 

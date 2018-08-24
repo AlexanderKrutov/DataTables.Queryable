@@ -26,6 +26,13 @@ namespace DataTables.Queryable
         /// <param name="propertyExpression">Expression to locate the desired property</param>
         /// <returns><see cref="DataTablesColumn{T}"/> instance correspoding to specified model property</returns>
         DataTablesColumn<T> this[Expression<Func<T, object>> propertyExpression] { get; }
+
+        /// <summary>
+        /// Gets column by its index
+        /// </summary>
+        /// <param name="columnIndex">Column index</param>
+        /// <returns><see cref="DataTablesColumn{T}"/> instance correspoding to specified model property</returns>
+        DataTablesColumn<T> this[int columnIndex] { get; }
     }
 
     /// <summary>
@@ -38,14 +45,14 @@ namespace DataTables.Queryable
         {
             get
             {
-                return this[GetPropertyPath(propertyExpression)];
+                return this[propertyExpression.GetPropertyPath()];
             }
         }
 
         public DataTablesColumn<T> this[string columnName]
         {
             get
-            {
+            {                
                 var column = this.FirstOrDefault(c => c.PropertyName == columnName);
                 if (column == null)
                     throw new ArgumentException($"Column \"{columnName}\" not found", nameof(columnName));
@@ -54,42 +61,15 @@ namespace DataTables.Queryable
             }
         }
 
-        private MemberExpression GetMemberExpression(Expression expression)
+        public new DataTablesColumn<T> this[int columnIndex]
         {
-            if (expression is MemberExpression)
+            get
             {
-                return (MemberExpression)expression;
-            }
-            else if (expression is LambdaExpression)
-            {
-                var lambdaExpression = expression as LambdaExpression;
-                if (lambdaExpression.Body is MemberExpression)
-                {
-                    return (MemberExpression)lambdaExpression.Body;
-                }
-                else if (lambdaExpression.Body is UnaryExpression)
-                {
-                    return ((MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand);
-                }
-            }
-            return null;
-        }
+                if (columnIndex < 0 || columnIndex > base.Count)
+                    throw new ArgumentException($"Column index \"{columnIndex}\" is out of range", nameof(columnIndex));
 
-        private string GetPropertyPath(Expression expr)
-        {
-            var path = new StringBuilder();
-            MemberExpression memberExpression = GetMemberExpression(expr);
-            do
-            {
-                if (path.Length > 0)
-                {
-                    path.Insert(0, ".");
-                }
-                path.Insert(0, memberExpression.Member.Name);
-                memberExpression = GetMemberExpression(memberExpression.Expression);
+                return base[columnIndex];
             }
-            while (memberExpression != null);
-            return path.ToString();
         }
     }
 }

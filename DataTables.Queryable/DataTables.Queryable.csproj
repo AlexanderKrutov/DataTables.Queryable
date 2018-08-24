@@ -72,6 +72,7 @@
     <Compile Include="DataTablesQueryProvider.cs" />
     <Compile Include="DataTablesRequest.cs" />
     <Compile Include="DataTablesColumnsCollection.cs" />
+    <Compile Include="ExpressionExtensions.cs" />
     <Compile Include="PagedList.cs" />
     <Compile Include="PredicateBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
