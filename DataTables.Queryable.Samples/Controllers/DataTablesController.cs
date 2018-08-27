@@ -5,6 +5,13 @@ using Newtonsoft.Json;
 
 using DataTables.Queryable.Samples.Database;
 using DataTables.Queryable.Samples.Models;
+using System.Data.Entity.SqlServer;
+using System.Linq.Expressions;
+using System.Data.Entity;
+using System.Collections.Generic;
+using System.Linq;
+using System.Data.Entity.SqlServerCompact;
+using System.Threading.Tasks;
 
 namespace DataTables.Queryable.Samples.Controllers
 {
@@ -19,7 +26,7 @@ namespace DataTables.Queryable.Samples.Controllers
             using (var ctx = new DatabaseContext())
             {
                 var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
-                return JsonDataTable(persons);
+                return JsonDataTable(persons, request.Draw);
             }
         }
 
@@ -32,17 +39,15 @@ namespace DataTables.Queryable.Samples.Controllers
 
             request.Columns[p => p.Name]
                 .GlobalSearchPredicate = (p) => p.Name.StartsWith(request.GlobalSearchValue);
-
             request.Columns[p => p.Position]
                 .GlobalSearchPredicate = (p) => p.Position.StartsWith(request.GlobalSearchValue);
-
             request.Columns[p => p.Office.Name]
                 .GlobalSearchPredicate = (p) => p.Office.Name.StartsWith(request.GlobalSearchValue);
 
             using (var ctx = new DatabaseContext())
             {
                 var persons = ctx.Persons.Include("Office").ToPagedList(request);
-                return JsonDataTable(persons);
+                return JsonDataTable(persons, request.Draw);
             }
         }
 
@@ -60,13 +65,39 @@ namespace DataTables.Queryable.Samples.Controllers
 
             // define custom predicate to filter results:
             // get all persons hired in period between "dateFrom" and "dateTo"
-            request.CustomFilterPredicate = 
+            request.CustomFilterPredicate =
                 (s) => s.StartDate >= dateFrom && s.StartDate <= dateTo;
 
             using (var ctx = new DatabaseContext())
             {
                 var persons = ctx.Persons.Include("Office").ToPagedList(request);
-                return JsonDataTable(persons);
+                return JsonDataTable(persons, request.Draw);
+            }
+        }
+
+        /// <summary>
+        /// AJAX POST
+        /// </summary>
+        public JsonResult Sample4(DataTablesAjaxPostModel model)
+        {
+            var request = new DataTablesRequest<Person>(model);
+            using (var ctx = new DatabaseContext())
+            {
+                var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
+                return JsonDataTable(persons, request.Draw);
+            }
+        }
+
+        /// <summary>
+        /// Async processing
+        /// </summary>
+        public async Task<JsonResult> Sample5()
+        {
+            var request = new DataTablesRequest<Person>(Request.QueryString);
+            using (var ctx = new DatabaseContext())
+            {
+                var persons = await ctx.Persons.Include("Office.Address").ToPagedListAsync(request);
+                return JsonDataTable(persons, request.Draw);
             }
         }
 
@@ -74,13 +105,15 @@ namespace DataTables.Queryable.Samples.Controllers
         /// Helper method that converts <see cref="IPagedList{T}"/> collection to the JSON-serialized object in datatables-friendly format.
         /// </summary>
         /// <param name="model"><see cref="IPagedList{T}"/> collection of items</param>
+        /// <param name="draw">Draw counter (optional).</param>
         /// <returns>JsonNetResult instance to be sent to datatables</returns>
-        protected JsonNetResult JsonDataTable<T>(IPagedList<T> model)
+        protected JsonNetResult JsonDataTable<T>(IPagedList<T> model, int draw = 0)
         {
             JsonNetResult jsonResult = new JsonNetResult();
             jsonResult.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
             jsonResult.Data = new
             {
+                draw = draw,
                 recordsTotal = model.TotalCount,
                 recordsFiltered = model.TotalCount,
                 data = model
@@ -111,5 +144,5 @@ namespace DataTables.Queryable.Samples.Controllers
                 response.Write(serializedObject);
             }
         }
-    }
+    }   
 }

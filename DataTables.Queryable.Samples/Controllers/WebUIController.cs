@@ -18,5 +18,15 @@ namespace DataTables.Queryable.Samples.Controllers
         {
             return View();
         }
+
+        public ActionResult Sample4()
+        {
+            return View();
+        }
+
+        public ActionResult Sample5()
+        {
+            return View();
+        }
     }
 }

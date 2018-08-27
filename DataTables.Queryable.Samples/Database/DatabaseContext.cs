@@ -2,6 +2,7 @@
 using System.Linq;
 
 using DataTables.Queryable.Samples.Models;
+using System.Diagnostics;
 
 namespace DataTables.Queryable.Samples.Database
 {
@@ -13,6 +14,9 @@ namespace DataTables.Queryable.Samples.Database
 
         public DatabaseContext() : base()
         {
+#if TRACE
+            this.Database.Log = (s) => Trace.WriteLine($"DataTables.Queryable SQL log:\n {s}");
+#endif
             System.Data.Entity.Database.SetInitializer(new DatabaseInitializer());
         }
 

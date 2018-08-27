@@ -14,18 +14,14 @@
 	It dynamically builds an expression tree from the request and allows to filter and sort an IQueryable according to the request parameters.
 	</description>
 	<summary></summary>
-    <releaseNotes>Added post-query action and converter, fixed issues</releaseNotes>
+    <releaseNotes>http://github.com/AlexanderKrutov/DataTables.Queryable/releases/tag/$version$</releaseNotes>
     <copyright>Copyright Alexander Krutov, 2018</copyright>
     <tags>datatables datatables.net iqueryable request expressiontree mvc linq</tags>
     <dependencies>
     </dependencies>
   </metadata>
   <files>
-	<file src="bin\Release\net40\DataTables.Queryable.dll" target="lib\net40\DataTables.Queryable.dll" />
-	<file src="bin\Release\net40\DataTables.Queryable.xml" target="lib\net40\DataTables.Queryable.xml" />
-	<file src="bin\Release\net45\DataTables.Queryable.dll" target="lib\net45\DataTables.Queryable.dll" />
-	<file src="bin\Release\net45\DataTables.Queryable.xml" target="lib\net45\DataTables.Queryable.xml" />
-	<file src="bin\Release\net451\DataTables.Queryable.dll" target="lib\net451\DataTables.Queryable.dll" />
-	<file src="bin\Release\net451\DataTables.Queryable.xml" target="lib\net451\DataTables.Queryable.xml" />
+	<file src="bin\Release\**.dll" target="lib" />
+	<file src="bin\Release\**.xml" target="lib" />
   </files> 
 </package>

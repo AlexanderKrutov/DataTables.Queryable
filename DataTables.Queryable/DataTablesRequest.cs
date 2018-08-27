@@ -28,6 +28,11 @@ namespace DataTables.Queryable
         public int PageSize { get; set; }
 
         /// <summary>
+        /// Draw counter. This is used by DataTables to ensure that the Ajax returns from server-side processing requests are drawn in sequence by DataTables.
+        /// </summary>
+        public int Draw { get; set; }
+
+        /// <summary>
         /// Global search value. To be applied to all columns which have searchable as true.
         /// Null if no search criteria provided.
         /// </summary>
@@ -98,6 +103,13 @@ namespace DataTables.Queryable
             : this(uri.Query) { }
 
         /// <summary>
+        /// Creates new <see cref="DataTablesRequest{T}"/> from <see cref="DataTablesAjaxPostModel"/>.
+        /// </summary>
+        /// <param name="ajaxPostModel">Contains datatables parameters sent from client side when POST method is used.</param>
+        public DataTablesRequest(DataTablesAjaxPostModel ajaxPostModel)
+            :this(ajaxPostModel.ToNameValueCollection()) {  }
+
+        /// <summary>
         /// Creates new <see cref="DataTablesRequest{T}"/> from http query string.
         /// </summary>
         /// <param name="queryString"></param>
@@ -125,8 +137,8 @@ namespace DataTables.Queryable
 
             int start = Int32.TryParse(query["start"], out start) ? start : 0;
             int length = Int32.TryParse(query["length"], out length) ? length : 15;
+            int draw = Int32.TryParse(query["draw"], out draw) ? draw : 0;
 
-            string sortFieldColumnIndex = query["order[0][column]"];
             string globalSearch = query["search[value]"];
             bool searchRegex = Boolean.TryParse(query["search[regex]"], out searchRegex) ? searchRegex : false;
 
@@ -136,6 +148,7 @@ namespace DataTables.Queryable
             GlobalSearchRegex = searchRegex;
             PageNumber = pageNumber;
             PageSize = length;
+            Draw = draw;
 
             // extract columns info
             string columnPattern = "columns\\[(\\d+)\\]\\[data\\]";
@@ -156,22 +169,38 @@ namespace DataTables.Queryable
                 PropertyInfo propertyInfo = null;
                 Type type = typeof(T);
 
-                propertyInfo = GetPropertyByName(type, data);
-                if (propertyInfo != null)
+                // take property name from `data`
+                if (colIndex.ToString() != data)
                 {
-                    propertyName = data;
+                    propertyInfo = GetPropertyByName(type, data);
+                    if (propertyInfo != null)
+                    {
+                        propertyName = data;
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Could not find a property called \"{data}\" on type \"{type}\". Make sure you have specified correct value of \"columnDefs.data\" parameter in datatables options.");
+                    }
                 }
-                else
+
+                // take property name from `name`
+                if (propertyInfo == null && !string.IsNullOrWhiteSpace(name))
                 {
                     propertyInfo = GetPropertyByName(type, name);
                     if (propertyInfo != null)
                     {
                         propertyName = name;
                     }
+                    else
+                    {
+                        throw new ArgumentException($"Could not find a property called \"{name}\" on type \"{type}\". Make sure you have specified correct value of \"columnDefs.name\" parameter in datatables options.");
+                    }
                 }
 
                 if (propertyName == null)
-                    throw new ArgumentException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Make sure you specified valid identifiers for \"data\" and/or \"name\" parameters in datatables options.");
+                {
+                    throw new ArgumentException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Make sure you specified valid identifiers for \"columnDefs.data\" and/or \"columnDefs.name\" parameters in datatables options for the column \"{colIndex}\".");
+                }
 
                 var column = new DataTablesColumn<T>()
                 {

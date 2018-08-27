@@ -58,7 +58,7 @@ public JsonResult Sample1()
     using (var ctx = new DatabaseContext())
     {
         var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
-        return JsonDataTable(persons);
+        return JsonDataTable(persons, request.Draw);
     }
 }
 </code>
@@ -79,7 +79,7 @@ public JsonResult Sample1()
             order: [[0, "asc"]],
             pageLength: 10,
             ajax: {
-                url: '/DataTables/Sample1',
+                url: '/DataTables/Sample1'
             },
             columnDefs: [
                 { targets: 0, data: 'Name' },
