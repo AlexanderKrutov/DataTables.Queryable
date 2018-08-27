@@ -64,7 +64,7 @@ namespace DataTables.Queryable
         /// </summary>
         public static Task<IPagedList<T>> ToPagedListAsync<T>(this IEnumerable<T> source, DataTablesRequest<T> request)
         {
-            return Task.Run(() => source.AsQueryable().ToPagedList(request));
+            return Task.Factory.StartNew(() => source.AsQueryable().ToPagedList(request));
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace DataTables.Queryable
         /// <returns><see cref="IPagedList{T}"/> intstance.</returns>
         public static Task<IPagedList<T>> ToPagedListAsync<T>(this IQueryable<T> queryable, DataTablesRequest<T> request)
         {
-            return Task.Run(() => queryable.Filter(request).ToPagedList());
+            return Task.Factory.StartNew(() => queryable.Filter(request).ToPagedList());
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace DataTables.Queryable
         /// <returns><see cref="IPagedList{T}"/> instance.</returns>
         public static Task<IPagedList<T>> ToPagedListAsync<T>(this IDataTablesQueryable<T> queryable)
         {
-            return Task.Run<IPagedList<T>>(() => new PagedList<T>(queryable));
+            return Task.Factory.StartNew<IPagedList<T>>(() => new PagedList<T>(queryable));
         }
         
         #endregion Asynchronous methods
@@ -315,7 +315,8 @@ namespace DataTables.Queryable
         /// </summary>
         /// <typeparam name="T">Data type</typeparam>
         /// <param name="propertyName">Property name</param>
-        /// <param name="stringConstant">String constant to construnt the <see cref="string.Contains(string)"/> expression.</param>
+        /// <param name="stringConstant">String constant to construct the <see cref="string.Contains(string)"/> expression.</param>
+        /// <param name="caseInsensitive">Case insensitive search</param>
         /// <returns>Predicate instance</returns>
         private static Expression<Func<T, bool>> BuildStringContainsPredicate<T>(string propertyName, string stringConstant, bool caseInsensitive)
         {

@@ -5,24 +5,14 @@
 		<ProjectName>DataTables.Queryable</ProjectName>
 		<ProjectPath>DataTables.Queryable</ProjectPath>
 		<BinDirectory>$(ProjectPath)\bin</BinDirectory>
-		<GetAssemblyVersionPath>$(BinDirectory)\Debug\</GetAssemblyVersionPath>		
+		<GetAssemblyVersionPath>$(BinDirectory)\Release\net40\</GetAssemblyVersionPath>		
     </PropertyGroup>  
 	
 	<ItemGroup>
-	    <ProjectToBuild Include="$(ProjectPath)\$(ProjectName).csproj">
-            <Properties>Configuration=Debug</Properties>
-        </ProjectToBuild>
         <ProjectToBuild Include="$(ProjectPath)\$(ProjectName).csproj">
-            <Properties>Configuration=Release 4.0</Properties>
-        </ProjectToBuild>
-        <ProjectToBuild Include="$(ProjectPath)\$(ProjectName).csproj">
-            <Properties>Configuration=Release 4.5</Properties>
-        </ProjectToBuild>		
-        <ProjectToBuild Include="$(ProjectPath)\$(ProjectName).csproj">
-            <Properties>Configuration=Release 4.5.1</Properties>
+            <Properties>Configuration=Release</Properties>
         </ProjectToBuild>
     </ItemGroup>
-	
 
 	<Target Name="All">
 		<CallTarget Targets="Clean;Build;GetVersion;Pack" />
@@ -51,7 +41,7 @@
 	</Target>
 	
 	<Target Name="Pack">
-		<Exec Command=".nuget\NuGet.exe pack &quot;$(ProjectPath)\$(ProjectName).nuspec&quot; -OutputDirectory &quot;.&quot; -properties id=$(AssemblyName);version=$(AssemblyVersion)" />
+		<Exec Command=".utils\NuGet.exe pack &quot;$(ProjectPath)\$(ProjectName).nuspec&quot; -OutputDirectory &quot;.&quot; -properties id=$(AssemblyName);version=$(AssemblyVersion)" />
 	</Target>
 	
 </Project>

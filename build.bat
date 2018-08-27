@@ -1,7 +1,17 @@
 @echo off
 
-set PATH_MSBUILD=C:\Program Files (x86)\MSBuild\14.0\Bin\
-"%PATH_MSBUILD%msbuild" DataTables.Queryable.proj 
+set PROJECT_PATH=DataTables.Queryable.proj 
+
+for /f "usebackq tokens=1* delims=: " %%i in (`.nuget\vswhere.exe -latest -requires Microsoft.Component.MSBuild`) do (
+  if /i "%%i"=="installationPath" set InstallDir=%%j
+)
+
+if exist "%InstallDir%\MSBuild\15.0\Bin\MSBuild.exe" (
+  "%InstallDir%\MSBuild\15.0\Bin\MSBuild.exe" %PROJECT_PATH%
+) else (
+  echo MSBuild Not Found!
+  goto fail 
+)
 
 set BUILD_STATUS=%ERRORLEVEL% 
 if %BUILD_STATUS%==0 goto end 

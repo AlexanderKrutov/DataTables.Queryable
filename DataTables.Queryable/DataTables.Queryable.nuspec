@@ -23,9 +23,7 @@
   <files>
 	<file src="bin\Release\net40\DataTables.Queryable.dll" target="lib\net40\DataTables.Queryable.dll" />
 	<file src="bin\Release\net40\DataTables.Queryable.xml" target="lib\net40\DataTables.Queryable.xml" />
-	<file src="bin\Release\net45\DataTables.Queryable.dll" target="lib\net45\DataTables.Queryable.dll" />
-	<file src="bin\Release\net45\DataTables.Queryable.xml" target="lib\net45\DataTables.Queryable.xml" />
-	<file src="bin\Release\net451\DataTables.Queryable.dll" target="lib\net451\DataTables.Queryable.dll" />
-	<file src="bin\Release\net451\DataTables.Queryable.xml" target="lib\net451\DataTables.Queryable.xml" />
+	<file src="bin\Release\netcoreapp2.1\DataTables.Queryable.dll" target="lib\netcoreapp2.1\DataTables.Queryable.dll" />
+	<file src="bin\Release\netcoreapp2.1\DataTables.Queryable.xml" target="lib\netcoreapp2.1\DataTables.Queryable.xml" />
   </files> 
 </package>
