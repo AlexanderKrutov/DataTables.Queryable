@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net40</TargetFrameworks>    
+    <TargetFrameworks>netcoreapp2.0;net40</TargetFrameworks>    
     <RootNamespace>DataTables.Queryable</RootNamespace>
     <AssemblyName>DataTables.Queryable</AssemblyName>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -12,7 +12,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\DataTables.Queryable.xml</DocumentationFile>
+    <DocumentationFile>bin\DataTables.Queryable.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -21,9 +21,7 @@
     </dependencies>
   </metadata>
   <files>
-	<file src="bin\Release\net40\DataTables.Queryable.dll" target="lib\net40\DataTables.Queryable.dll" />
-	<file src="bin\Release\net40\DataTables.Queryable.xml" target="lib\net40\DataTables.Queryable.xml" />
-	<file src="bin\Release\netcoreapp2.1\DataTables.Queryable.dll" target="lib\netcoreapp2.1\DataTables.Queryable.dll" />
-	<file src="bin\Release\netcoreapp2.1\DataTables.Queryable.xml" target="lib\netcoreapp2.1\DataTables.Queryable.xml" />
+	<file src="bin\Release\**.dll" target="lib" />
+	<file src="bin\Release\**.xml" target="lib" />
   </files> 
 </package>
