@@ -15,7 +15,7 @@
     </ItemGroup>
 
 	<Target Name="All">
-		<CallTarget Targets="Clean;Build;GetVersion;Pack" />
+		<CallTarget Targets="Clean;Build;GetVersion;CreateNuGet;CreateZip" />
 	</Target>
 	
 	<Target Name="Clean">  
@@ -40,8 +40,50 @@
 		<Message Text="Assembly version: $(AssemblyVersion)" />
 	</Target>
 	
-	<Target Name="Pack">
+	<Target Name="CreateNuGet">
 		<Exec Command=".utils\NuGet.exe pack &quot;$(ProjectPath)\$(ProjectName).nuspec&quot; -OutputDirectory &quot;.&quot; -properties id=$(AssemblyName);version=$(AssemblyVersion)" />
 	</Target>
 	
+	<Target Name="CreateZip">
+		<ItemGroup>
+			<FilesToZip Include="$(BinDirectory)\Release\*\*.dll" />
+			<FilesToZip Include="$(BinDirectory)\Release\*\*.xml" />
+		</ItemGroup>
+		<Zip Files="@(FilesToZip)" OutputFileName="$(AssemblyName).$(AssemblyVersion).zip"/>
+	</Target>
+	
+	<UsingTask TaskName="Zip" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+		<ParameterGroup>
+			<OutputFilename ParameterType="System.String" Required="true" />
+			<Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+		</ParameterGroup>
+		<Task>
+			<Reference Include="System.IO.Compression" />
+			<Using Namespace="System.IO.Compression" />
+			<Code Type="Fragment" Language="cs">
+			<![CDATA[
+			  try
+			  {
+				using (Stream zipStream = new FileStream(Path.GetFullPath(OutputFilename), FileMode.Create, FileAccess.Write))
+				using (ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Create))
+				{
+					foreach (ITaskItem fileItem in Files)
+					{
+						string filename = fileItem.ItemSpec;
+						using (Stream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read))
+						using (Stream fileStreamInZip = archive.CreateEntry(Path.GetFileName(Path.GetDirectoryName(filename)) + "/" + new FileInfo(filename).Name).Open())
+							fileStream.CopyTo(fileStreamInZip);
+					}
+				}
+				return true;
+			  }
+			  catch (Exception ex)
+			  {
+				Log.LogErrorFromException(ex);
+				return false;
+			  }
+			]]>
+			</Code>
+		</Task>
+	</UsingTask>
 </Project>
