@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Data.Entity.SqlServerCompact;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace DataTables.Queryable.Samples.Controllers
 {
@@ -23,6 +24,9 @@ namespace DataTables.Queryable.Samples.Controllers
         public JsonResult Sample1()
         {
             var request = new DataTablesRequest<Person>(Request.QueryString);
+
+            AddDataTablesLogging(request);
+
             using (var ctx = new DatabaseContext())
             {
                 var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
@@ -36,6 +40,8 @@ namespace DataTables.Queryable.Samples.Controllers
         public JsonResult Sample2()
         {
             var request = new DataTablesRequest<Person>(Request.QueryString);
+
+            AddDataTablesLogging(request);
 
             request.Columns[p => p.Name]
                 .GlobalSearchPredicate = (p) => p.Name.StartsWith(request.GlobalSearchValue);
@@ -57,6 +63,8 @@ namespace DataTables.Queryable.Samples.Controllers
         public JsonResult Sample3()
         {
             var request = new DataTablesRequest<Person>(Request.QueryString);
+
+            AddDataTablesLogging(request);
 
             // get custom parameters from the request
             const string dateFormat = "yyyy-MM-dd";
@@ -81,6 +89,9 @@ namespace DataTables.Queryable.Samples.Controllers
         public JsonResult Sample4(DataTablesAjaxPostModel model)
         {
             var request = new DataTablesRequest<Person>(model);
+
+            AddDataTablesLogging(request);
+
             using (var ctx = new DatabaseContext())
             {
                 var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
@@ -94,6 +105,9 @@ namespace DataTables.Queryable.Samples.Controllers
         public async Task<JsonResult> Sample5()
         {
             var request = new DataTablesRequest<Person>(Request.QueryString);
+
+            AddDataTablesLogging(request);
+
             using (var ctx = new DatabaseContext())
             {
                 var persons = await ctx.Persons.Include("Office.Address").ToPagedListAsync(request);
@@ -119,6 +133,16 @@ namespace DataTables.Queryable.Samples.Controllers
                 data = model
             };
             return jsonResult;
+        }
+
+        /// <summary>
+        /// Adds queries logging for DataTables.Queryable.
+        /// </summary>
+        private void AddDataTablesLogging<T>(DataTablesRequest<T> request)
+        {
+#if TRACE
+            request.Log = (s) => Trace.WriteLine(s);
+#endif
         }
 
         /// <summary>

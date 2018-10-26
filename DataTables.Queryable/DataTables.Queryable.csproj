@@ -20,6 +20,10 @@
     <DocumentationFile></DocumentationFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.0|AnyCPU'">
+    <DefineConstants />
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="DataTables.Queryable.nuspec" />
   </ItemGroup>
