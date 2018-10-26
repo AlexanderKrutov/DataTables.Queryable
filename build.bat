@@ -2,7 +2,7 @@
 
 set PROJECT_PATH=DataTables.Queryable.proj 
 
-for /f "usebackq tokens=1* delims=: " %%i in (`.nuget\vswhere.exe -latest -requires Microsoft.Component.MSBuild`) do (
+for /f "usebackq tokens=1* delims=: " %%i in (`.utils\vswhere.exe -latest -requires Microsoft.Component.MSBuild`) do (
   if /i "%%i"=="installationPath" set InstallDir=%%j
 )
 
