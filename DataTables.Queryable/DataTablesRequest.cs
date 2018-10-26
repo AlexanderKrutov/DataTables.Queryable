@@ -70,9 +70,15 @@ namespace DataTables.Queryable
         public Expression<Func<T, bool>> CustomFilterPredicate { get; set; } = null;
 
         /// <summary>
+        /// Set this property to log incoming request parameters and resulting queries to the given delegate. 
+        /// For example, to log to the console, set this property to <see cref="System.Console.Write(string)"/>.
+        /// </summary>
+        public Action<string> Log { get; set; } = null;
+
+        /// <summary>
         /// Original request parameters collection
         /// </summary>
-        protected NameValueCollection mOrginalRequest { get; set; } = null;
+        public NameValueCollection OriginalRequest { get; private set; } = null;
 
         /// <summary>
         /// Gets original request parameter value by its name
@@ -83,7 +89,7 @@ namespace DataTables.Queryable
         {
             get
             {
-                return mOrginalRequest[parameterName];
+                return OriginalRequest[parameterName];
             }
         }
 
@@ -128,12 +134,7 @@ namespace DataTables.Queryable
             if (!query.HasKeys())
                 throw new ArgumentException("Datatables query has no keys.");
 
-            mOrginalRequest = new NameValueCollection(query);
-
-#if TRACE
-            Trace.WriteLine($"DataTables.Queryable incoming request parameters:");
-            query.AllKeys.ToList().ForEach(k => Trace.WriteLine($"{k} = {query[k]}"));
-#endif
+            OriginalRequest = new NameValueCollection(query);
 
             int start = Int32.TryParse(query["start"], out start) ? start : 0;
             int length = Int32.TryParse(query["length"], out length) ? length : 15;

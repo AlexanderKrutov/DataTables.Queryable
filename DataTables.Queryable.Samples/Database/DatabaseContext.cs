@@ -15,7 +15,7 @@ namespace DataTables.Queryable.Samples.Database
         public DatabaseContext() : base()
         {
 #if TRACE
-            this.Database.Log = (s) => Trace.WriteLine($"DataTables.Queryable SQL log:\n {s}");
+            this.Database.Log = (s) => Trace.WriteLine($"Database log:\n{s}");
 #endif
             System.Data.Entity.Database.SetInitializer(new DatabaseInitializer());
         }

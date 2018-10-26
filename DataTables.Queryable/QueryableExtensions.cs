@@ -156,9 +156,20 @@ namespace DataTables.Queryable
                 // order the IDataTablesQueryable<T> by columns listed in the request
                 .Order();
 
-#if TRACE
-            Trace.WriteLine($"DataTables.Queryable resulting query:\n {queryable}");
-#endif
+            if (request.Log != null)
+            {
+                StringBuilder sb = new StringBuilder("DataTables.Queryable -> Incoming request:\n");
+                foreach (string key in request.OriginalRequest.AllKeys)
+                {
+                    string value = request.OriginalRequest[key];
+                    sb.AppendLine($"{key} = {$"\"{value}\""}");
+                }
+                sb.AppendLine();
+                sb.AppendLine($"DataTables.Queryable -> Resulting queryable:\n{queryable}\n");
+
+                request.Log.BeginInvoke(sb.ToString(), null, null);
+            }
+
             return (IDataTablesQueryable<T>)queryable;
         }
 
