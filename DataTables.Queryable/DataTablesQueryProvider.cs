@@ -1,14 +1,18 @@
-﻿using System.Linq;
+﻿using Microsoft.EntityFrameworkCore.Query.Internal;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DataTables.Queryable
 {
-    internal class DataTablesQueryProvider<T> : IQueryProvider
+    internal class DataTablesQueryProvider<T> : IAsyncQueryProvider
     {
-        private IQueryProvider sourceProvider;
+        private IAsyncQueryProvider sourceProvider;
         private DataTablesRequest<T> request;
 
-        internal DataTablesQueryProvider(IQueryProvider sourceProvider, DataTablesRequest<T> request)
+        internal DataTablesQueryProvider(IAsyncQueryProvider sourceProvider, DataTablesRequest<T> request)
         {
             this.sourceProvider = sourceProvider;
             this.request = request;
@@ -32,6 +36,16 @@ namespace DataTables.Queryable
         public TResult Execute<TResult>(Expression expression)
         {
             return (TResult)sourceProvider.Execute(expression);
+        }
+
+        public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression expression)
+        {
+            return sourceProvider.ExecuteAsync<TResult>(expression);
+        }
+
+        public Task<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken)
+        {
+            return sourceProvider.ExecuteAsync<TResult>(expression, cancellationToken);
         }
     }
 }
