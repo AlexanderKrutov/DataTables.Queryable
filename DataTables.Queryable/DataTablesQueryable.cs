@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Query.Internal;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace DataTables.Queryable
     /// <typeparam name="T">Data type.</typeparam>
     public interface IDataTablesQueryable<T> : IQueryable<T>
     {
+        IQueryable<T> SourceQueryable { get; set; }
+
         /// <summary>
         /// <see cref="DataTablesRequest{T}"/> instance to filter the original <see cref="IQueryable{T}"/>.
         /// </summary>
@@ -26,14 +29,15 @@ namespace DataTables.Queryable
     /// <typeparam name="T">Data type.</typeparam>
     internal class DataTablesQueryable<T> : IDataTablesQueryable<T>
     {
-        private IQueryable<T> sourceQueryable;
+        public IQueryable<T> SourceQueryable { get; set; }
+
         private DataTablesQueryProvider<T> sourceProvider;
         private DataTablesRequest<T> request;
 
         internal DataTablesQueryable(IQueryable<T> query, DataTablesRequest<T> request)
         {
-            this.sourceQueryable = query;
-            this.sourceProvider = new DataTablesQueryProvider<T>(query.Provider, request);
+            this.SourceQueryable = query;
+            this.sourceProvider = new DataTablesQueryProvider<T>((IAsyncQueryProvider)query.Provider, request);
             this.request = request;
         }
 
@@ -49,7 +53,7 @@ namespace DataTables.Queryable
         {
             get
             {
-                return sourceQueryable.Expression;
+                return SourceQueryable.Expression;
             }
         }
 
@@ -63,12 +67,12 @@ namespace DataTables.Queryable
         
         public IEnumerator<T> GetEnumerator()
         {
-            return sourceQueryable.GetEnumerator();
+            return SourceQueryable.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return sourceQueryable.GetEnumerator();
+            return SourceQueryable.GetEnumerator();
         }
 
         public DataTablesRequest<T> Request
@@ -81,7 +85,7 @@ namespace DataTables.Queryable
 
         public override string ToString()
         {
-            return sourceQueryable.ToString();
+            return SourceQueryable.ToString();
         }
     }
 }
