@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DataTables.Queryable
 {
@@ -59,10 +61,17 @@ namespace DataTables.Queryable
         }
 
         /// <summary>
-        /// Creates new instance of <see cref="PagedList{T}"/> collection.
+        /// Use <see cref="CreateAsync"/>
         /// </summary>
-        /// <param name="queryable"><see cref="IDataTablesQueryable{T}"/>instance to be paginated</param>
-        internal PagedList(IDataTablesQueryable<T> queryable) : base()
+        private PagedList() : base() {}
+
+        /// <summary>
+        /// Used by <see cref="CreateAsync"/> to create a <see cref="PagedList{T}"/> aynschronously.
+        /// </summary>
+        /// <param name="queryable"></param>
+        /// <param name="cancellationToken">A <see cref="System.Threading.CancellationToken"/> to observe while waiting for the task to complete.</param>
+        /// <returns></returns>
+        private async Task InitializeAsync(IDataTablesQueryable<T> queryable, CancellationToken cancellationToken)
         {
             // pagination is on
             if (queryable.Request.PageSize > 0)
@@ -70,23 +79,80 @@ namespace DataTables.Queryable
                 int skipCount = (queryable.Request.PageNumber - 1) * queryable.Request.PageSize;
                 int takeCount = queryable.Request.PageSize;
 
-                TotalCount = queryable.Count();
+                TotalCount = await GetCount(queryable.SourceQueryable, cancellationToken);
                 PageNumber = queryable.Request.PageNumber;
                 PageSize = queryable.Request.PageSize;
                 PagesCount = TotalCount % PageSize == 0 ? TotalCount / PageSize : TotalCount / PageSize + 1;
 
-                AddRange(queryable.Skip(skipCount).Take(takeCount).ToList());
+                var pagedQueryable = queryable.SourceQueryable.Skip(skipCount).Take(takeCount);
+
+                AddRange(await ToListAsync(pagedQueryable, cancellationToken));
             }
             // no pagination
             else
             {
-                TotalCount = queryable.Count();
+                TotalCount = await GetCount(queryable.SourceQueryable, cancellationToken);
                 PageNumber = 1;
                 PageSize = -1;
                 PagesCount = 1;
 
-                AddRange(queryable.ToList());
+                AddRange(await queryable.SourceQueryable.ToListAsync(cancellationToken));
+            }
+
+        }
+
+        /// <summary>
+        /// Get the count asynchronously using a <see cref="CancellationToken" /> if the query is an EF Core queryable./>
+        /// </summary>
+        /// <param name="queryable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        private async Task<int> GetCount(IQueryable<T> queryable, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // Check if the query is an EF Core EntityQueryable for async support.
+            if (queryable is EntityQueryable<T>)
+            {
+                var efQueryable = (EntityQueryable<T>)queryable;
+                return await efQueryable.CountAsync(cancellationToken);
+            }
+            else
+            {
+                return queryable.Count();
             }
         }
+
+        /// <summary>
+        /// Get the list asynchronously using a <see cref="CancellationToken" /> if the query is an EF Core queryable./>
+        /// </summary>
+        /// <param name="queryable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        private async Task<List<T>> ToListAsync(IQueryable<T> queryable, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // Check if the query is an EF Core EntityQueryable for async support.
+            if (queryable is EntityQueryable<T>)
+            {
+                var efQueryable = (EntityQueryable<T>)queryable;
+                return await efQueryable.ToListAsync(cancellationToken);
+            }
+            else
+            {
+                return queryable.ToList();
+            }
+        }
+
+        /// <summary>
+        /// Creates new instance of <see cref="PagedList{T}"/> collection.
+        /// </summary>
+        /// <param name="queryable"><see cref="IDataTablesQueryable{T}"/>instance to be paginated</param>
+        /// <param name="cancellationToken">A <see cref="System.Threading.CancellationToken"/> to observe while waiting for the task to complete.</param>
+        internal static async Task<IPagedList<T>> CreateAsync(IDataTablesQueryable<T> queryable, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            PagedList<T> pagedList = new PagedList<T>();
+            await pagedList.InitializeAsync(queryable, cancellationToken);
+            return pagedList;
+        }
+
+
     }
 }
