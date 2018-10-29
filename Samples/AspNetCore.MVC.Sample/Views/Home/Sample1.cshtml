@@ -1,0 +1,120 @@
+﻿@{
+    ViewData["Title"] = "Sample 1: Basic usage";
+}
+
+<h3>@ViewBag.Title</h3>
+<p>This page demonstrates basic usage of <samp>DataTables.Queryable</samp> library with all features enabled:</p>
+<ul>
+    <li>Global search by all columns with default predicate <code>String.Contains(...)</code></li>
+    <li>Individual column search with default predicate <code>String.Contains(...)</code></li>
+    <li>Binding to and search/order by nested properties (<samp>Office</samp>, <samp>Address</samp>)</li>
+    <li>Sorting by all column with multisort support</li>
+    <li>Pagination</li>
+</ul>
+<p>Tips:</p>
+<ul>
+    <li>Check the Visual Studio output view (<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>O</kbd>) to see how the datatables-to-server request is translated to LINQ and Entity Framework query.</li>
+    <li>Try multi-column ordering with pressed <kbd>Shift</kbd> and click on a column.</li>
+</ul>
+<br />
+
+<table id="table" class="table table-condensed table-bordered table-vcentered dataTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Office</th>
+            <th>Address</th>
+            <th>Extn.</th>
+            <th>Start date</th>
+            <th>Salary</th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Office</th>
+            <th>Address</th>
+            <th>Extn.</th>
+            <th>Start date</th>
+            <th>Salary</th>
+        </tr>
+    </tfoot>
+</table>
+
+<br />
+
+<p>Server-side code:</p>
+
+<pre>
+<code class="csharp">
+// DataTablesController.cs:
+
+public JsonResult Sample1()
+{
+    var request = new DataTablesRequest&lt;Person&gt;(Request.QueryString);
+    using (var ctx = new DatabaseContext())
+    {
+        var persons = ctx.Persons.Include("Office.Address").ToPagedList(request);
+        return JsonDataTable(persons, request.Draw);
+    }
+}
+</code>
+</pre>
+
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+
+            $('#table tfoot th').each(function () {
+                var title = $(this).text();
+                $(this).html('<input type="text" class="form-control" style="width: 100%" placeholder="Search ' + title + '" />');
+            });
+
+            var table = $('#table').DataTable({
+                autoWidth: false,
+                processing: true,
+                serverSide: true,
+                order: [[0, "asc"]],
+                pageLength: 10,
+                ajax: {
+                    url: '/DataTables/Sample1'
+                },
+                columnDefs: [
+                    { targets: 0, data: 'Name' },
+                    { targets: 1, data: 'Position' },
+                    { targets: 2, data: 'Office.Name' },
+                    {
+                        targets: 3, data: 'Office.Address.Street',
+                        render: function (street, type, person, meta) { return person.Office.Address.Street + ", " + person.Office.Address.Building; }
+                    },
+                    { targets: 4, data: 'Extn' },
+                    {
+                        targets: 5, data: 'StartDate',
+                        render: function (data) { return Date.parse(data).toString('MMMM dd, yyyy'); }
+                    },
+                    {
+                        targets: 6, data: 'Salary'
+                    },
+                ]
+            });
+
+            // Apply the search
+            table.columns().every(function () {
+                var that = this;
+
+                $('input', this.footer()).on('keyup change', function () {
+                    if (that.search() !== this.value) {
+                        that
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            });
+
+            hljs.initHighlightingOnLoad();
+        });
+    </script>
+}
+

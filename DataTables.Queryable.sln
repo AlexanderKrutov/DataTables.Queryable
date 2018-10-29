@@ -3,12 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2003
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataTables.Queryable", "DataTables.Queryable\DataTables.Queryable.csproj", "{47F3BA33-C7DC-4E21-9E1A-F2C240EC735C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataTables.Queryable", "DataTables.Queryable\DataTables.Queryable.csproj", "{47F3BA33-C7DC-4E21-9E1A-F2C240EC735C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataTables.Queryable.Samples", "DataTables.Queryable.Samples\DataTables.Queryable.Samples.csproj", "{6C34486D-B5BE-4B2E-A824-B9CF3452E25E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{47F3BA33-C7DC-4E21-9E1A-F2C240EC735C} = {47F3BA33-C7DC-4E21-9E1A-F2C240EC735C}
-	EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{CAEB4630-711A-495F-ADE3-737D21D65AE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCore.MVC.Sample", "Samples\AspNetCore.MVC.Sample\AspNetCore.MVC.Sample.csproj", "{E6E7C880-9631-4A3D-9266-4961B22D72CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,13 +19,16 @@ Global
 		{47F3BA33-C7DC-4E21-9E1A-F2C240EC735C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47F3BA33-C7DC-4E21-9E1A-F2C240EC735C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47F3BA33-C7DC-4E21-9E1A-F2C240EC735C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6C34486D-B5BE-4B2E-A824-B9CF3452E25E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6C34486D-B5BE-4B2E-A824-B9CF3452E25E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6C34486D-B5BE-4B2E-A824-B9CF3452E25E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6C34486D-B5BE-4B2E-A824-B9CF3452E25E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6E7C880-9631-4A3D-9266-4961B22D72CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6E7C880-9631-4A3D-9266-4961B22D72CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6E7C880-9631-4A3D-9266-4961B22D72CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6E7C880-9631-4A3D-9266-4961B22D72CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E6E7C880-9631-4A3D-9266-4961B22D72CB} = {CAEB4630-711A-495F-ADE3-737D21D65AE5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B5A9717D-A27C-4CAD-9277-2B08CC7FBD19}
