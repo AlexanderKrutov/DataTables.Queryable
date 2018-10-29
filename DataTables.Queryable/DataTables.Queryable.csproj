@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net40</TargetFrameworks>    
+    <TargetFramework>netcoreapp2.0</TargetFramework>    
     <RootNamespace>DataTables.Queryable</RootNamespace>
     <AssemblyName>DataTables.Queryable</AssemblyName>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -28,10 +28,6 @@
     <None Remove="DataTables.Queryable.nuspec" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
-    <Reference Include="System.Web" />
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="DataTablesAjaxPostModel.cs" />
@@ -44,6 +40,10 @@
     <Compile Include="PagedList.cs" />
     <Compile Include="PredicateBuilder.cs" />
     <Compile Include="QueryableExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.4" />
   </ItemGroup>
 
 </Project>
