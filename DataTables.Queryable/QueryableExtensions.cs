@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DataTables.Queryable
@@ -49,7 +50,7 @@ namespace DataTables.Queryable
         /// <returns><see cref="IPagedList{T}"/> instance.</returns>
         public static IPagedList<T> ToPagedList<T>(this IDataTablesQueryable<T> queryable)
         {
-            return new PagedList<T>(queryable);
+            return PagedList<T>.CreateAsync(queryable).Result;
         }
 
         #endregion Synchronous methods
@@ -62,9 +63,9 @@ namespace DataTables.Queryable
         /// <param name="source"><see cref="IEnumerable{T}"/> to be filtered and paginated.</param>
         /// <param name="request"><see cref="DataTablesRequest{T}"/> instance with filtering parameters.</param>
         /// </summary>
-        public static Task<IPagedList<T>> ToPagedListAsync<T>(this IEnumerable<T> source, DataTablesRequest<T> request)
+        public static Task<IPagedList<T>> ToPagedListAsync<T>(this IEnumerable<T> source, DataTablesRequest<T> request, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.Factory.StartNew(() => source.AsQueryable().ToPagedList(request));
+            return source.AsQueryable().ToPagedListAsync(request, cancellationToken);
         }
 
         /// <summary>
@@ -74,10 +75,11 @@ namespace DataTables.Queryable
         /// <typeparam name="T">Data type</typeparam>
         /// <param name="queryable"><see cref="IQueryable{T}"/> to be filtered and paginated.</param>
         /// <param name="request"><see cref="DataTablesRequest{T}"/> instance with filtering parameters.</param>
+        /// <param name="cancellationToken">A <see cref="System.Threading.CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns><see cref="IPagedList{T}"/> intstance.</returns>
-        public static Task<IPagedList<T>> ToPagedListAsync<T>(this IQueryable<T> queryable, DataTablesRequest<T> request)
+        public static Task<IPagedList<T>> ToPagedListAsync<T>(this IQueryable<T> queryable, DataTablesRequest<T> request, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.Factory.StartNew(() => queryable.Filter(request).ToPagedList());
+            return queryable.Filter(request).ToPagedListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -86,9 +88,9 @@ namespace DataTables.Queryable
         /// <typeparam name="T">Data type.</typeparam>
         /// <param name="queryable"><see cref="IDataTablesQueryable{T}"/> instance.</param>
         /// <returns><see cref="IPagedList{T}"/> instance.</returns>
-        public static Task<IPagedList<T>> ToPagedListAsync<T>(this IDataTablesQueryable<T> queryable)
+        public static Task<IPagedList<T>> ToPagedListAsync<T>(this IDataTablesQueryable<T> queryable, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.Factory.StartNew<IPagedList<T>>(() => new PagedList<T>(queryable));
+            return PagedList<T>.CreateAsync(queryable, cancellationToken);
         }
         
         #endregion Asynchronous methods
