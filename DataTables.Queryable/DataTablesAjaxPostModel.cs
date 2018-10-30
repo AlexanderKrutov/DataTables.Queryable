@@ -16,6 +16,12 @@ namespace DataTables.Queryable
     /// </remarks>
     public class DataTablesAjaxPostModel
     {
+        public DataTablesAjaxPostModel()
+        {
+            Columns = new List<ColumnData>();
+            Order = new List<OrderData>();
+        }
+
         /// <summary>
         /// Draw counter. This is used by DataTables to ensure that the Ajax returns from 
         /// server-side processing requests are drawn in sequence by DataTables 
