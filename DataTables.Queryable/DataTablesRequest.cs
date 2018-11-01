@@ -253,15 +253,11 @@ namespace DataTables.Queryable
             if (parts.Length > 1)
             {
                 var propertyInfo = type.GetProperty(parts[0]);
-
                 if(propertyInfo == null)
                 {
                     return null;
                 }
-
-                var propertyType = propertyInfo.PropertyType;
-
-                return GetPropertyByName(propertyType, parts.Skip(1).Aggregate((a, i) => $"{a}.{i}"));
+                return GetPropertyByName(propertyInfo.PropertyType, parts.Skip(1).Aggregate((a, i) => $"{a}.{i}"));
             }
             else
             {
