@@ -1,0 +1,96 @@
+﻿@{
+    ViewData["Title"] = "Sample 2: Custom search predicate";
+}
+
+<h3>@ViewBag.Title</h3>
+<p>
+    This page demonstrates result of using custom global search predicate.
+    <ul>
+        <li>Fields <samp>Name</samp>, <samp>Position</samp>, and <samp>Office</samp> use <code>.StartsWith(...)</code> predicate for search.</li>
+        <li>Other fields are non-searchable.</li>
+        <li>Individual column search is disabled for this sample, ordering is allowed.</li>
+    </ul>
+
+<p>Tips:</p>
+<ul>
+    <li>Check the Visual Studio output view (<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>O</kbd>) to see how the datatables-to-server request is translated to LINQ and Entity Framework query.</li>
+    <li>Try multi-column ordering with pressed <kbd>Shift</kbd> and click on a column.</li>
+</ul>
+<br />
+
+<table id="table" class="table table-condensed table-bordered table-vcentered dataTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Office</th>
+            <th>Extn.</th>
+            <th>Start date</th>
+            <th>Salary</th>
+        </tr>
+    </thead>
+</table>
+
+<br />
+
+<p>Server-side code:</p>
+
+<pre>
+<code class="csharp">
+// DataTablesController.cs:
+
+public JsonResult Sample2()
+{
+    var request = new DataTablesRequest&lt;Person&gt;(Request.QueryString);
+
+    request.Columns[p => p.Name]
+        .GlobalSearchPredicate = (p) => p.Name.StartsWith(request.GlobalSearchValue);        
+    request.Columns[p => p.Position]
+        .GlobalSearchPredicate = (p) => p.Position.StartsWith(request.GlobalSearchValue);
+    request.Columns[p => p.Office.Name]
+        .GlobalSearchPredicate = (p) => p.Office.Name.StartsWith(request.GlobalSearchValue);
+
+    using (var ctx = new DatabaseContext())
+    {
+        var persons = ctx.Persons.Include("Office").ToPagedList(request);
+        return JsonDataTable(persons, request.Draw);
+    }
+}
+</code>
+</pre>
+
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+            var table = $('#table').DataTable({
+                autoWidth: false,
+                processing: true,
+                serverSide: true,
+                order: [[0, "asc"]],
+                pageLength: 10,
+                ajax: {
+                    url: '/DataTables/Sample2',
+                },
+                columnDefs: [
+                    { targets: 0, data: 'Name' },
+                    { targets: 1, data: 'Position' },
+                    { targets: 2, data: 'Office.Name' },
+                    { targets: 3, data: 'Extn', searchable: false },
+                    {
+                        targets: 4, data: 'StartDate', searchable: false,
+                        render: function (data) { return Date.parse(data).toString('MMMM dd, yyyy'); }
+                    },
+                    {
+                        targets: 5, data: 'Salary', searchable: false
+                    },
+                ],
+                "language": {
+                    "search": "Search by first symbols of Name/Position/Office:"
+                }
+            });
+
+            hljs.initHighlightingOnLoad();
+        });
+    </script>
+}
+
