@@ -144,9 +144,9 @@ namespace DataTables.Queryable
                 model[$"columns[{i}][data]"] = Columns[i].Data;
                 model[$"columns[{i}][name]"] = Columns[i].Name;
                 model[$"columns[{i}][searchable]"] = Columns[i].Searchable.ToString();
-                model[$"columns[{i}][orderable]"] = Columns[i].Searchable.ToString();
-                model[$"columns[{i}][search][value]"] = Columns[i].Search.Value;
-                model[$"columns[{i}][search][regex]"] = Columns[i].Search.Regex.ToString();
+                model[$"columns[{i}][orderable]"] = Columns[i].Orderable.ToString();
+                model[$"columns[{i}][search][value]"] = Columns[i].Search?.Value;
+                model[$"columns[{i}][search][regex]"] = Columns[i].Search?.Regex.ToString();
             }
 
             for (int i = 0; i < Order.Count; i++)

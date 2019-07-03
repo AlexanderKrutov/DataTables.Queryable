@@ -343,16 +343,17 @@ namespace DataTables.Queryable
                 exp = Expression.Call(propertyExp, Object_ToString);
             }
 
+            var someValue = Expression.Constant(caseInsensitive ? stringConstant.ToLower() : stringConstant, typeof(string));
+            var containsMethodExp = Expression.Call(exp, String_Contains, someValue);
+            var notNullExp = Expression.NotEqual(exp, Expression.Constant(null, typeof(object)));
+
             // call ToLower if case insensitive search
             if (caseInsensitive)
             {
-                exp = Expression.Call(exp, String_ToLower);
-                stringConstant = stringConstant.ToLower();
+                var toLowerExp = Expression.Call(exp, String_ToLower);
+                containsMethodExp = Expression.Call(toLowerExp, String_Contains, someValue);
             }
 
-            var someValue = Expression.Constant(stringConstant, typeof(string));
-            var containsMethodExp = Expression.Call(exp, String_Contains, someValue);
-            var notNullExp = Expression.NotEqual(exp, Expression.Constant(null, typeof(object)));
             return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(notNullExp, containsMethodExp), parameterExp);
         }
 

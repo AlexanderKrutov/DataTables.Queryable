@@ -250,9 +250,19 @@ namespace DataTables.Queryable
         private PropertyInfo GetPropertyByName(Type type, string propertyName)
         {
             string[] parts = propertyName.Split('.');
-            return (parts.Length > 1)
-                ? GetPropertyByName(type.GetProperty(parts[0]).PropertyType, parts.Skip(1).Aggregate((a, i) => $"{a}.{i}"))
-                : type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+            if (parts.Length > 1)
+            {
+                var propertyInfo = type.GetProperty(parts[0]);
+                if(propertyInfo == null)
+                {
+                    return null;
+                }
+                return GetPropertyByName(propertyInfo.PropertyType, parts.Skip(1).Aggregate((a, i) => $"{a}.{i}"));
+            }
+            else
+            {
+                return type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+            }
         }
     }
 }
