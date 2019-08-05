@@ -180,7 +180,7 @@ namespace DataTables.Queryable
                     }
                     else
                     {
-                        throw new ArgumentException($"Could not find a property called \"{data}\" on type \"{type}\". Make sure you have specified correct value of \"columnDefs.data\" parameter in datatables options.");
+                        throw new NoPropertyByNameException($"Could not find a property called \"{data}\" on type \"{type}\". Make sure you have specified correct value of \"columnDefs.data\" parameter in datatables options.");
                     }
                 }
 
@@ -194,13 +194,13 @@ namespace DataTables.Queryable
                     }
                     else
                     {
-                        throw new ArgumentException($"Could not find a property called \"{name}\" on type \"{type}\". Make sure you have specified correct value of \"columnDefs.name\" parameter in datatables options.");
+                        throw new NoPropertyByNameException($"Could not find a property called \"{name}\" on type \"{type}\". Make sure you have specified correct value of \"columnDefs.name\" parameter in datatables options.");
                     }
                 }
 
                 if (propertyName == null)
                 {
-                    throw new ArgumentException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Make sure you specified valid identifiers for \"columnDefs.data\" and/or \"columnDefs.name\" parameters in datatables options for the column \"{colIndex}\".");
+                    throw new NoPropertyByNameException($"Unable to associate datatables column \"{colIndex}\" with model type \"{typeof(T)}\". There are no matching public property found. Make sure you specified valid identifiers for \"columnDefs.data\" and/or \"columnDefs.name\" parameters in datatables options for the column \"{colIndex}\".");
                 }
 
                 var column = new DataTablesColumn<T>()
